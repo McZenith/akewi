@@ -15,7 +15,9 @@
     "search": "Search",
     "submit": "Submit",
     "close": "Close",
-    "examples": "Examples"
+    "examples": "Examples",
+    "play": "Play",
+    "pause": "Pause"
   },
   "auth": {
     "login": "Log In",

@@ -6,12 +6,11 @@ import {
   StyleProp,
   ViewStyle,
   View,
-  Platform,
   Animated,
   Easing,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { useTheme } from '../providers/ThemeProvider';
+import { useTheme } from '../../providers/ThemeProvider';
 import Text from './Text';
 
 export type IconButtonSize = 'tiny' | 'small' | 'medium' | 'large';
@@ -100,7 +99,7 @@ const IconButton: React.FC<IconButtonProps> = ({
         };
       case 'tonal':
         return {
-          backgroundColor: theme.colors.surfaceVariant,
+          backgroundColor: theme.colors.background,
         };
       case 'default':
       default:
@@ -168,7 +167,7 @@ const IconButton: React.FC<IconButtonProps> = ({
   ];
 
   // Determine if we need custom color for the icon
-  const iconColor = variant === 'filled' ? theme.colors.onPrimary : color || theme.colors.primary;
+  const iconColor = variant === 'filled' ? theme.colors.primary : color || theme.colors.primary;
 
   // Clone icon element with proper color
   const iconElement = React.isValidElement(icon)
@@ -208,7 +207,7 @@ const IconButton: React.FC<IconButtonProps> = ({
               typeof badge === 'number' && badge > 99 ? styles.largeBadge : null,
             ]}
           >
-            <Text style={styles.badgeText} color={theme.colors.onError}>
+            <Text style={styles.badgeText} color={theme.colors.error}>
               {typeof badge === 'number' && badge > 99 ? '99+' : badge}
             </Text>
           </View>
@@ -219,7 +218,13 @@ const IconButton: React.FC<IconButtonProps> = ({
       {(tooltip || tooltipTranslationKey) && (
         <View style={styles.tooltipContainer} pointerEvents="none">
           {tooltipTranslationKey ? (
-            <Text translationKey={tooltipTranslationKey} variant="caption" style={styles.tooltip} />
+            <Text
+              translationKey={tooltipTranslationKey as any}
+              variant="caption"
+              style={styles.tooltip}
+            >
+              {tooltip}
+            </Text>
           ) : (
             <Text variant="caption" style={styles.tooltip}>
               {tooltip}

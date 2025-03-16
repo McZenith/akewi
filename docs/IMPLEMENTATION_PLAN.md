@@ -89,20 +89,20 @@ This document outlines the step-by-step implementation plan for the Akewi app. E
 
 ## User Authentication & Profile
 
-- [ ] 2.1 Implement auth slice in Redux
+- [x] 2.1 Implement auth slice in Redux
 
-  - [ ] Define auth state interface
-  - [ ] Create auth reducers
-  - [ ] Implement auth actions
-  - [ ] Add auth selectors
+  - [x] Define auth state interface
+  - [x] Create auth reducers
+  - [x] Implement auth actions
+  - [x] Add auth selectors
 
 - [ ] 2.2 Create Login screen
 
-  - [ ] Design email/phone input form
-  - [ ] Implement input type detection (email vs. phone)
-  - [ ] Add form validation
-  - [ ] Implement continue button with loading state
-  - [ ] Add social login buttons
+  - [x] Design email/phone input form
+  - [x] Implement input type detection (email vs. phone)
+  - [x] Add form validation
+  - [x] Implement continue button with loading state
+  - [x] Add social login buttons
 
 - [ ] 2.3 Build verification screen
 

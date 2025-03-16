@@ -95,9 +95,9 @@ const Button: React.FC<ButtonProps> = ({
             borderWidth: 0,
           },
           text: {
-            color: theme.colors.onSecondary,
+            color: theme.colors.secondary,
           },
-          loadingColor: theme.colors.onSecondary,
+          loadingColor: theme.colors.secondary,
         };
       case 'outline':
         return {
@@ -142,9 +142,9 @@ const Button: React.FC<ButtonProps> = ({
             }),
           },
           text: {
-            color: theme.colors.onPrimary,
+            color: theme.colors.primary,
           },
-          loadingColor: theme.colors.onPrimary,
+          loadingColor: theme.colors.primary,
         };
     }
   };
@@ -162,7 +162,7 @@ const Button: React.FC<ButtonProps> = ({
     isDisabled && {
       opacity: 0.6,
       ...(variant !== 'text' &&
-        variant !== 'outline' && { backgroundColor: theme.colors.disabled }),
+        variant !== 'outline' && { backgroundColor: theme.colors.background }),
     },
     style,
   ];
@@ -211,9 +211,10 @@ const Button: React.FC<ButtonProps> = ({
       ) : (
         <React.Fragment>
           {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
-
           {translationKey ? (
-            <Text variant="button" style={combinedTextStyle} translationKey={translationKey} />
+            <Text variant="button" style={combinedTextStyle} translationKey={translationKey as any}>
+              {title}
+            </Text>
           ) : (
             <Text variant="button" style={combinedTextStyle}>
               {title}

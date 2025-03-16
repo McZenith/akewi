@@ -1,0 +1,16 @@
+{
+  "common": {
+    "appName": "Akewi",
+    "examples": "Examples",
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "play": "Play",
+    "pause": "Pause"
+  }
+}

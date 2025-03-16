@@ -1,16 +1,16 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { useLanguage } from '../providers/LanguageProvider';
+import { useLanguage } from '../../providers/LanguageProvider';
 import useAppTranslation from '../../hooks/useAppTranslation';
 import Text from './Text';
-import { useTheme } from '../providers/ThemeProvider';
+import { useTheme } from '../../providers/ThemeProvider';
 
 /**
  * LanguageSelector Component
  * Allows the user to switch between English and Yoruba languages
  */
 const LanguageSelector: React.FC = () => {
-  const { language, changeLanguage } = useLanguage();
+  const { currentLanguage: language, changeLanguage } = useLanguage();
   const { t } = useAppTranslation();
   const { theme } = useTheme();
 
@@ -27,8 +27,7 @@ const LanguageSelector: React.FC = () => {
           style={[
             styles.languageButton,
             {
-              backgroundColor:
-                language === 'en' ? theme.colors.primary : theme.colors.surfaceVariant,
+              backgroundColor: language === 'en' ? theme.colors.primary : theme.colors.background,
             },
           ]}
           onPress={() => handleLanguageChange('en')}
@@ -42,8 +41,7 @@ const LanguageSelector: React.FC = () => {
           style={[
             styles.languageButton,
             {
-              backgroundColor:
-                language === 'yo' ? theme.colors.primary : theme.colors.surfaceVariant,
+              backgroundColor: language === 'yo' ? theme.colors.primary : theme.colors.background,
             },
           ]}
           onPress={() => handleLanguageChange('yo')}
@@ -70,9 +68,8 @@ const LanguageSelector: React.FC = () => {
         <Text variant="body1" style={styles.exampleText}>
           {t('home.featuredOriki')}
         </Text>
-
         <Text variant="body1" style={styles.exampleText}>
-          {t('player.play')} / {t('player.pause')}
+          {t('common.play')} / {t('common.pause')}
         </Text>
       </View>
     </View>

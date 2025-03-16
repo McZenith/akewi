@@ -1,314 +1,161 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  TextInput,
   View,
+  TextInput,
   StyleSheet,
   TextInputProps,
-  Animated,
-  StyleProp,
-  ViewStyle,
-  TextStyle,
   NativeSyntheticEvent,
   TextInputFocusEventData,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Pressable,
+  Platform,
 } from 'react-native';
-import { useTheme } from '../providers/ThemeProvider';
-import Text from './Text';
-import { useTranslation } from 'react-i18next';
+import { colors } from '../../theme/colors';
+import { typography } from '../../theme/typography';
+import { scale, verticalScale } from '../../utils/scaling';
 
-export interface InputProps extends Omit<TextInputProps, 'style'> {
-  label?: string;
-  labelTranslationKey?: string;
+interface InputProps extends Omit<TextInputProps, 'style'> {
   error?: string;
-  errorTranslationKey?: string;
-  helperText?: string;
-  helperTextTranslationKey?: string;
-  startAdornment?: React.ReactNode;
-  endAdornment?: React.ReactNode;
-  clearable?: boolean;
-  fullWidth?: boolean;
-  containerStyle?: StyleProp<ViewStyle>;
-  labelStyle?: StyleProp<TextStyle>;
-  inputStyle?: StyleProp<TextStyle>;
-  inputContainerStyle?: StyleProp<ViewStyle>;
-  errorStyle?: StyleProp<TextStyle>;
-  helperTextStyle?: StyleProp<TextStyle>;
-  focusColor?: string;
+  inputStyle?: any;
+  containerStyle?: any;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  label?: string;
 }
 
 const Input: React.FC<InputProps> = ({
-  label,
-  labelTranslationKey,
   error,
-  errorTranslationKey,
-  helperText,
-  helperTextTranslationKey,
-  startAdornment,
-  endAdornment,
-  clearable = false,
-  fullWidth = false,
-  containerStyle,
-  labelStyle,
   inputStyle,
-  inputContainerStyle,
-  errorStyle,
-  helperTextStyle,
-  focusColor,
+  containerStyle,
+  leftIcon,
+  rightIcon,
   onFocus,
   onBlur,
-  onChangeText,
-  value,
+  label,
   placeholder,
-  placeholderTextColor,
-  ...rest
+  ...props
 }) => {
-  const { theme } = useTheme();
-  const { t } = useTranslation();
   const [isFocused, setIsFocused] = useState(false);
-  const [inputValue, setInputValue] = useState(value || '');
-  const animatedValue = useRef(new Animated.Value(0)).current;
-  const inputRef = useRef<TextInput>(null);
 
-  useEffect(() => {
-    if (value !== undefined) {
-      setInputValue(value);
-    }
-  }, [value]);
-
-  // Animation config
-  useEffect(() => {
-    Animated.timing(animatedValue, {
-      toValue: isFocused || inputValue ? 1 : 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-  }, [isFocused, inputValue, animatedValue]);
-
-  // Handle focus events
   const handleFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setIsFocused(true);
-    onFocus && onFocus(e);
+    onFocus?.(e);
   };
 
   const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setIsFocused(false);
-    onBlur && onBlur(e);
+    onBlur?.(e);
   };
-
-  // Handle input change
-  const handleChangeText = (text: string) => {
-    setInputValue(text);
-    onChangeText && onChangeText(text);
-  };
-
-  // Clear input
-  const handleClear = () => {
-    setInputValue('');
-    onChangeText && onChangeText('');
-    inputRef.current?.focus();
-  };
-
-  // Handle input container press
-  const handleContainerPress = () => {
-    inputRef.current?.focus();
-  };
-
-  // Border color animation
-  const borderColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [
-      error ? theme.colors.error : theme.colors.border,
-      error ? theme.colors.error : focusColor ? focusColor : theme.colors.primary,
-    ],
-  });
-
-  // Label animations
-  const labelTranslateY = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -22],
-  });
-
-  const labelScale = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0.85],
-  });
-
-  const labelColor = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [
-      error ? theme.colors.error : theme.colors.textSecondary,
-      error
-        ? theme.colors.error
-        : isFocused
-          ? focusColor || theme.colors.primary
-          : theme.colors.textSecondary,
-    ],
-  });
-
-  // Get placeholder text
-  const placeholderText = isFocused ? placeholder : '';
-  const actualPlaceholderColor = placeholderTextColor || theme.colors.textSecondary;
-
-  // Get display text for label, error, and helper text
-  const displayLabel = labelTranslationKey ? t(labelTranslationKey) : label;
-  const displayError = errorTranslationKey ? t(errorTranslationKey) : error;
-  const displayHelperText = helperTextTranslationKey ? t(helperTextTranslationKey) : helperText;
 
   return (
-    <View style={[styles.container, fullWidth && styles.fullWidth, containerStyle]}>
-      {/* Label */}
-      {displayLabel && (
-        <Animated.Text
-          style={[
-            styles.label,
-            {
-              color: theme.colors.textSecondary,
-              transform: [{ translateY: labelTranslateY }, { scale: labelScale }],
-              color: labelColor,
-            },
-            labelStyle,
-          ]}
-        >
-          {displayLabel}
-        </Animated.Text>
+    <View
+      style={[
+        styles.container,
+        isFocused && styles.containerFocused,
+        error && styles.containerError,
+        containerStyle,
+      ]}
+      accessible={true}
+      accessibilityLabel={label || placeholder}
+      accessibilityState={{
+        disabled: props.editable === false,
+      }}
+      accessibilityRole="none"
+    >
+      {leftIcon && (
+        <View style={styles.leftIcon} accessibilityElementsHidden={true}>
+          {leftIcon}
+        </View>
       )}
 
-      {/* Input Container */}
-      <TouchableWithoutFeedback onPress={handleContainerPress}>
-        <Animated.View
-          style={[
-            styles.inputContainer,
-            {
-              borderColor: borderColor,
-              backgroundColor: theme.colors.surfaceVariant,
-            },
-            isFocused && styles.focused,
-            error && { borderColor: theme.colors.error },
-            inputContainerStyle,
-          ]}
-        >
-          {/* Start Adornment */}
-          {startAdornment && <View style={styles.adornment}>{startAdornment}</View>}
+      <TextInput
+        style={[
+          styles.input,
+          leftIcon && styles.inputWithLeftIcon,
+          rightIcon && styles.inputWithRightIcon,
+          inputStyle,
+        ]}
+        placeholderTextColor="#ADADAD"
+        placeholder={placeholder}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        selectionColor={colors.text.primary}
+        accessibilityRole="text"
+        accessibilityLabel={label || placeholder}
+        accessibilityHint={placeholder}
+        {...props}
+      />
 
-          {/* TextInput */}
-          <TextInput
-            ref={inputRef}
-            style={[
-              styles.input,
-              {
-                color: theme.colors.text,
-                fontFamily: theme.typography.fontFamily.regular,
-                fontSize: theme.typography.fontSize.md,
-              },
-              inputStyle,
-            ]}
-            placeholderTextColor={actualPlaceholderColor}
-            placeholder={placeholderText}
-            value={inputValue}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            onChangeText={handleChangeText}
-            selectionColor={focusColor || theme.colors.primary}
-            {...rest}
-          />
-
-          {/* Clear Button */}
-          {clearable && inputValue.length > 0 && (
-            <Pressable
-              onPress={handleClear}
-              style={styles.clearButton}
-              accessibilityRole="button"
-              accessibilityLabel="Clear text"
-              accessibilityHint="Clears the text from the input field"
-            >
-              <View style={[styles.clearIcon, { borderColor: theme.colors.textSecondary }]} />
-            </Pressable>
-          )}
-
-          {/* End Adornment */}
-          {endAdornment && <View style={styles.adornment}>{endAdornment}</View>}
-        </Animated.View>
-      </TouchableWithoutFeedback>
-
-      {/* Error Message or Helper Text */}
-      <View style={styles.bottomTextContainer}>
-        {displayError ? (
-          <Text variant="caption" color={theme.colors.error} style={[styles.errorText, errorStyle]}>
-            {displayError}
-          </Text>
-        ) : displayHelperText ? (
-          <Text
-            variant="caption"
-            color={theme.colors.textSecondary}
-            style={[styles.helperText, helperTextStyle]}
-          >
-            {displayHelperText}
-          </Text>
-        ) : null}
-      </View>
+      {rightIcon && (
+        <View style={styles.rightIcon} accessibilityElementsHidden={true}>
+          {rightIcon}
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 12,
-    position: 'relative',
-  },
-  fullWidth: {
-    width: '100%',
-  },
-  label: {
-    position: 'absolute',
-    left: 0,
-    top: 16,
-    zIndex: 1,
-    paddingHorizontal: 4,
-  },
-  inputContainer: {
+    width: scale(342),
+    height: verticalScale(52),
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 56,
-    position: 'relative',
+    backgroundColor: '#F8F8F8',
+    borderRadius: scale(8),
+    borderWidth: Platform.select({ ios: StyleSheet.hairlineWidth, android: 1 }),
+    borderColor: '#E8E8E8',
+    paddingHorizontal: scale(16),
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 1,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
   },
-  focused: {
-    borderWidth: 2,
+  containerFocused: {
+    borderColor: colors.text.primary,
+    borderWidth: Platform.select({ ios: 1, android: 1.5 }),
+    ...Platform.select({
+      ios: {
+        shadowOpacity: 0.1,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  containerError: {
+    borderColor: colors.form.error,
   },
   input: {
     flex: 1,
     height: '100%',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
+    fontFamily: typography.fontFamily.primary,
+    fontSize: typography.sizes.input,
+    fontWeight: typography.weights.medium,
+    color: colors.text.primary,
+    padding: 0,
+    ...Platform.select({
+      android: {
+        paddingVertical: 0,
+      },
+    }),
   },
-  adornment: {
-    marginHorizontal: 4,
+  inputWithLeftIcon: {
+    paddingLeft: scale(8),
   },
-  clearButton: {
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+  inputWithRightIcon: {
+    paddingRight: scale(8),
   },
-  clearIcon: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    position: 'relative',
+  leftIcon: {
+    marginRight: scale(8),
   },
-  bottomTextContainer: {
-    minHeight: 20,
-    paddingTop: 4,
-  },
-  errorText: {
-    marginTop: 2,
-  },
-  helperText: {
-    marginTop: 2,
+  rightIcon: {
+    marginLeft: scale(8),
   },
 });
 

@@ -13,10 +13,12 @@ import {
 } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import settingsReducer from './slices/settingsSlice';
+import authReducer from './slices/authSlice';
 
 // Define the root reducer
 const rootReducer = combineReducers({
   settings: settingsReducer,
+  auth: authReducer,
   // Add more reducers here as they are created
 });
 
@@ -25,7 +27,7 @@ const persistConfig = {
   key: 'root',
   version: 1,
   storage: AsyncStorage,
-  whitelist: ['settings'], // only settings will be persisted
+  whitelist: ['settings', 'auth'], // persist settings and auth state
 };
 
 // Create a persisted reducer
