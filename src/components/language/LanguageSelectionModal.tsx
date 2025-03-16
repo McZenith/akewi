@@ -8,22 +8,23 @@ import {
   Platform,
   Dimensions,
   Pressable,
+  BackHandler,
 } from 'react-native';
-import { PanGestureHandler } from 'react-native-gesture-handler';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
-  useAnimatedGestureHandler,
   runOnJS,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { scale, verticalScale } from '../../utils/scaling';
+import { scale } from '../../utils/scaling';
 import Text from '../base/Text';
 import ukFlag from '../../../assets/icons/uk-flag.png';
 import nigeriaFlag from '../../../assets/icons/nigeria-flag.png';
+import { colors } from '../../theme/colors';
 
 interface Language {
   code: string;
@@ -61,102 +62,75 @@ const LanguageSelectionModal: React.FC<LanguageSelectionModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const translateY = useSharedValue(SCREEN_HEIGHT);
-  const opacity = useSharedValue(0);
+
+  React.useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (visible) {
+        onClose();
+        return true;
+      }
+      return false;
+    });
+
+    return () => backHandler.remove();
+  }, [visible]);
 
   const handleLanguageSelect = (code: string) => {
     onSelectLanguage(code);
     onClose();
   };
 
-  const animatedContainerStyle = useAnimatedStyle(() => ({
+  const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
 
-  const animatedOverlayStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  }));
-
-  const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, ctx: any) => {
-      ctx.startY = translateY.value;
-    },
-    onActive: (event, ctx) => {
-      translateY.value = ctx.startY + event.translationY;
-    },
-    onEnd: event => {
-      if (event.translationY > 100) {
-        translateY.value = withSpring(SCREEN_HEIGHT);
-        opacity.value = withTiming(0, { duration: 150 });
-        runOnJS(onClose)();
-      } else {
-        translateY.value = withSpring(0);
-      }
-    },
-  });
-
   React.useEffect(() => {
     if (visible) {
-      opacity.value = withTiming(1, { duration: 150 });
       translateY.value = withSpring(0, {
-        damping: 20,
-        stiffness: 90,
-        mass: 0.4,
+        damping: 50,
+        stiffness: 300,
       });
     } else {
-      opacity.value = withTiming(0, { duration: 150 });
-      translateY.value = withSpring(SCREEN_HEIGHT, {
-        damping: 20,
-        stiffness: 90,
-        mass: 0.4,
-      });
+      translateY.value = withSpring(SCREEN_HEIGHT);
     }
   }, [visible]);
+
+  if (!visible) return null;
 
   return (
     <Modal
       visible={visible}
       transparent
       statusBarTranslucent
-      animationType="none"
+      animationType="fade"
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
-        <Animated.View style={[styles.overlay, animatedOverlayStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-          <Animated.View style={[styles.container, animatedContainerStyle]}>
-            <PanGestureHandler onGestureEvent={gestureHandler}>
-              <Animated.View>
-                <Pressable onPress={onClose}>
-                  <View style={styles.handle} />
-                </Pressable>
-              </Animated.View>
-            </PanGestureHandler>
-            <Text style={styles.title}>{t('language.select')}</Text>
+        <Pressable style={styles.backdrop} onPress={onClose} />
+        <Animated.View style={[styles.content, animatedStyle]}>
+          <View style={styles.handle} />
+          <Text style={styles.title}>{t('language.select')}</Text>
 
-            {languages.map((language, index) => (
-              <React.Fragment key={language.code}>
-                <TouchableOpacity
-                  style={styles.languageOption}
-                  onPress={() => handleLanguageSelect(language.code)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.languageContent}>
-                    <Image source={language.flag} style={styles.flagIcon} resizeMode="contain" />
-                    <Text style={styles.languageName}>{language.displayName}</Text>
-                  </View>
-                  <Ionicons
-                    name={
-                      currentLanguage === language.code ? 'checkmark-circle' : 'radio-button-off'
-                    }
-                    size={24}
-                    color={currentLanguage === language.code ? '#00BA88' : '#C4C4C4'}
-                  />
-                </TouchableOpacity>
-                {index < languages.length - 1 && <View style={styles.divider} />}
-              </React.Fragment>
-            ))}
-          </Animated.View>
+          {languages.map((language, index) => (
+            <React.Fragment key={language.code}>
+              <TouchableOpacity
+                style={styles.languageOption}
+                onPress={() => handleLanguageSelect(language.code)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.languageContent}>
+                  <Image source={language.flag} style={styles.flagIcon} resizeMode="contain" />
+                  <Text style={styles.languageName}>{language.displayName}</Text>
+                </View>
+                <Ionicons
+                  name={currentLanguage === language.code ? 'checkmark-circle' : 'radio-button-off'}
+                  size={24}
+                  color={currentLanguage === language.code ? '#00BA88' : '#C4C4C4'}
+                />
+              </TouchableOpacity>
+              {index < languages.length - 1 && <View style={styles.divider} />}
+            </React.Fragment>
+          ))}
         </Animated.View>
       </View>
     </Modal>
@@ -166,31 +140,31 @@ const LanguageSelectionModal: React.FC<LanguageSelectionModalProps> = ({
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    margin: 0,
-    padding: 0,
-  },
-  overlay: {
-    flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'transparent',
   },
-  container: {
-    backgroundColor: '#FFF',
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  content: {
+    backgroundColor: colors.background,
     borderTopLeftRadius: scale(24),
     borderTopRightRadius: scale(24),
-    paddingTop: scale(12),
     paddingHorizontal: scale(16),
-    paddingBottom: Platform.OS === 'ios' ? scale(34) : scale(16),
-    width: '100%',
+    paddingTop: scale(12),
+    paddingBottom: Platform.OS === 'ios' ? scale(34) : scale(24),
     ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
       android: {
         elevation: 24,
+      },
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: -3,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
       },
     }),
   },
@@ -205,7 +179,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: scale(18),
     fontWeight: '600',
-    color: '#090909',
+    color: colors.text.primary,
     marginBottom: scale(16),
     textAlign: 'center',
   },
@@ -229,10 +203,10 @@ const styles = StyleSheet.create({
   languageName: {
     fontSize: scale(16),
     fontWeight: '500',
-    color: '#090909',
+    color: colors.text.primary,
   },
   divider: {
-    height: 1,
+    height: StyleSheet.hairlineWidth,
     backgroundColor: '#E8E8E8',
     width: '100%',
   },

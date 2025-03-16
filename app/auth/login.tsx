@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   View,
+  ScrollView,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -36,12 +37,13 @@ import logoImage from '../../assets/images/logo.png';
 import backgroundImage from '../../assets/images/background.png';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Header from '../../src/components/base/Header';
-import LanguageSelectionModal from '../../src/components/language/LanguageSelectionModal';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import i18next from '../../src/i18n';
 import { useVoiceGuidance } from '../../src/providers/VoiceGuidanceProvider';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 interface SocialButtonProps {
   provider: 'google' | 'apple';
@@ -52,14 +54,15 @@ interface SocialButtonProps {
 
 const LoginScreen = () => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const router = useRouter();
   const [identifier, setIdentifier] = useState('');
-  const [identifierType, setIdentifierType] = useState<'email' | 'phone' | null>(null);
-  const [error, setError] = useState('');
+  const [identifierType, setIdentifierType] = useState<'email' | 'phone' | null>('email');
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState(i18next.language || 'en');
   const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState(i18next.language || 'English');
   const { startVoiceGuidance, stopVoiceGuidance, readText, isActive, currentElementId } =
     useVoiceGuidance();
 
@@ -74,6 +77,10 @@ const LoginScreen = () => {
       easing: ANIMATION_CONFIG.EASING.DECELERATE,
     });
   }, []);
+
+  useEffect(() => {
+    setSelectedLanguage(i18n.language || 'en');
+  }, [i18n.language]);
 
   const handlePressIn = () => {
     buttonScale.value = withTiming(0.95, {
@@ -94,7 +101,7 @@ const LoginScreen = () => {
   }));
 
   const formAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: formOpacity.value,
+    transform: [{ translateY: withSpring(0) }],
   }));
 
   const handleVoicePress = () => {
@@ -110,17 +117,12 @@ const LoginScreen = () => {
   };
 
   const handleLanguagePress = () => {
-    setIsLanguageModalVisible(true);
+    router.push('/language-modal');
   };
 
   const handleLanguageSelect = async (language: string) => {
-    try {
-      await i18next.changeLanguage(language);
-      setSelectedLanguage(language);
-      console.log('Language changed successfully to:', language);
-    } catch (error) {
-      console.error('Error changing language:', error);
-    }
+    setSelectedLanguage(language);
+    await i18next.changeLanguage(language);
     setIsLanguageModalVisible(false);
   };
 
@@ -220,12 +222,31 @@ const LoginScreen = () => {
     }
   };
 
+  // Social buttons
+  const renderSocialButtons = () => (
+    <>
+      <SocialButton
+        provider="google"
+        onPress={handleGooglePress}
+        disabled={isSocialLoading !== null}
+        voiceElementId="login-google"
+      />
+      <SocialButton
+        provider="apple"
+        onPress={handleApplePress}
+        disabled={isSocialLoading !== null}
+        voiceElementId="login-apple"
+      />
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <ImageBackground source={backgroundImage} style={styles.background} resizeMode="cover">
           <Header
@@ -233,10 +254,7 @@ const LoginScreen = () => {
             rightComponent={
               <>
                 <VoiceButton onPress={handleVoicePress} />
-                <LanguageSelector
-                  currentLanguage={selectedLanguage}
-                  onPress={handleLanguagePress}
-                />
+                <LanguageSelector currentLanguage={selectedLanguage} />
               </>
             }
           />
@@ -248,32 +266,36 @@ const LoginScreen = () => {
             styles.formContainer,
             {
               marginTop:
-                Platform.OS === 'ios' ? verticalScale(220) - insets.top : verticalScale(220),
+                Platform.OS === 'ios' ? verticalScale(220) - insets.top : verticalScale(180),
             },
           ]}
         >
-          <Animated.View entering={FadeInUp.duration(ANIMATION_CONFIG.DURATION.MEDIUM)}>
-            <Animated.View style={[styles.formContent, formAnimatedStyle]}>
-              <Animated.Image
-                source={logoImage}
-                style={styles.logo}
-                resizeMode="contain"
-                entering={FadeIn.delay(300).duration(ANIMATION_CONFIG.DURATION.MEDIUM)}
-              />
+          <AnimatedScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.formContent}>
+              <View style={styles.logoContainer}>
+                <Animated.Image
+                  source={logoImage}
+                  style={[styles.logo]}
+                  resizeMode="contain"
+                  entering={FadeIn.delay(300).duration(ANIMATION_CONFIG.DURATION.MEDIUM)}
+                />
+              </View>
 
-              <Animated.View
-                entering={FadeIn.delay(400).duration(ANIMATION_CONFIG.DURATION.MEDIUM)}
-              >
+              <View style={styles.descriptionContainer}>
                 <VoicedText style={styles.description} voiceElementId="login-description">
                   {t('auth.description')}
                 </VoicedText>
-              </Animated.View>
+              </View>
 
               <Input
                 value={identifier}
                 onChangeText={handleIdentifierChange}
                 placeholder={getPlaceholder()}
-                error={error}
+                error={error || undefined}
                 voiceElementId="login-identifier"
                 onSubmitEditing={handleContinue}
                 returnKeyType="go"
@@ -298,31 +320,13 @@ const LoginScreen = () => {
                 )}
               </AnimatedTouchableOpacity>
 
-              <View style={styles.socialButtons}>
-                <SocialButton
-                  provider="google"
-                  onPress={handleGooglePress}
-                  disabled={isSocialLoading !== null}
-                  voiceElementId="login-google"
-                />
-                <SocialButton
-                  provider="apple"
-                  onPress={handleApplePress}
-                  disabled={isSocialLoading !== null}
-                  voiceElementId="login-apple"
-                />
-              </View>
-            </Animated.View>
-          </Animated.View>
+              <View style={styles.socialButtons}>{renderSocialButtons()}</View>
+            </View>
+          </AnimatedScrollView>
         </LinearGradient>
-      </KeyboardAvoidingView>
 
-      <LanguageSelectionModal
-        visible={isLanguageModalVisible}
-        onClose={() => setIsLanguageModalVisible(false)}
-        onSelectLanguage={handleLanguageSelect}
-        currentLanguage={selectedLanguage}
-      />
+        <View style={styles.bottomBackground} />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -330,7 +334,7 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.white,
   },
   keyboardView: {
     flex: 1,
@@ -345,25 +349,37 @@ const styles = StyleSheet.create({
     flex: 1,
     borderTopLeftRadius: scale(24),
     borderTopRightRadius: scale(24),
-    backgroundColor: colors.background,
+    backgroundColor: colors.white,
     paddingTop: verticalScale(32),
+    zIndex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: verticalScale(24),
   },
   formContent: {
     width: '100%',
     alignItems: 'center',
     paddingHorizontal: scale(16),
   },
+  logoContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: verticalScale(24),
+  },
   logo: {
     width: scale(120),
     height: scale(120),
-    marginBottom: verticalScale(24),
+  },
+  descriptionContainer: {
+    width: '100%',
+    marginBottom: verticalScale(32),
   },
   description: {
     fontSize: typography.sizes.lg,
     fontFamily: typography.fontFamily.primary,
     color: colors.text.primary,
     textAlign: 'center',
-    marginBottom: verticalScale(32),
     paddingHorizontal: scale(24),
     borderRadius: scale(4),
   },
@@ -388,6 +404,15 @@ const styles = StyleSheet.create({
     gap: verticalScale(16),
     marginTop: verticalScale(24),
     width: scale(345),
+  },
+  bottomBackground: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: verticalScale(100),
+    backgroundColor: colors.white,
+    zIndex: 0,
   },
 });
 

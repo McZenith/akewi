@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useVoiceGuidance } from '../../providers/VoiceGuidanceProvider';
 import { scale } from '../../utils/scaling';
@@ -19,7 +19,8 @@ export const VoiceButton: React.FC<VoiceButtonProps> = ({
   style,
   onPress: externalOnPress,
 }) => {
-  const { isActive, isWaitingForInput, startVoiceGuidance, stopVoiceGuidance } = useVoiceGuidance();
+  const { isActive, isWaitingForInput, startVoiceGuidance, stopVoiceGuidance, readText } =
+    useVoiceGuidance();
 
   const handlePress = () => {
     if (externalOnPress) {
@@ -27,8 +28,12 @@ export const VoiceButton: React.FC<VoiceButtonProps> = ({
     } else {
       if (isActive) {
         stopVoiceGuidance();
+        // Announce voice guidance stopped
+        readText('Voice guidance stopped').catch(console.error);
       } else {
         startVoiceGuidance();
+        // Announce voice guidance started
+        readText('Voice guidance started').catch(console.error);
       }
     }
   };

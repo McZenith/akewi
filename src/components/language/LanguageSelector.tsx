@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { scale } from '../../utils/scaling';
@@ -9,23 +10,42 @@ import { useTranslation } from 'react-i18next';
 
 interface LanguageSelectorProps {
   currentLanguage: string;
-  onPress: () => void;
   style?: any;
 }
 
-const LanguageSelector: React.FC<LanguageSelectorProps> = ({ currentLanguage, onPress, style }) => {
-  const { t } = useTranslation();
+const getLanguageDisplayName = (code: string): string => {
+  switch (code) {
+    case 'en':
+      return 'English';
+    case 'yo':
+      return 'Yoruba';
+    default:
+      return code;
+  }
+};
+
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({ currentLanguage, style }) => {
+  const { t, i18n } = useTranslation();
+  const router = useRouter();
+
+  const handlePress = () => {
+    router.push('/language-modal');
+  };
+
+  // Use the current i18n language if the prop is not provided
+  const languageCode = currentLanguage || i18n.language || 'en';
+  const displayName = getLanguageDisplayName(languageCode);
 
   return (
     <TouchableOpacity
       style={[styles.container, style]}
-      onPress={onPress}
+      onPress={handlePress}
       activeOpacity={0.7}
       accessibilityRole="button"
-      accessibilityLabel={t('language.change', { current: currentLanguage })}
+      accessibilityLabel={`Change language from ${displayName}`}
     >
       <Ionicons name="globe-outline" size={scale(20)} color={colors.text.primary} />
-      <Text style={styles.text}>{currentLanguage}</Text>
+      <Text style={styles.text}>{displayName}</Text>
     </TouchableOpacity>
   );
 };

@@ -65,12 +65,12 @@ const SocialButton: React.FC<SocialButtonProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: scale(342),
-    height: verticalScale(48),
+    height: verticalScale(56),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: scale(8),
-    paddingVertical: scale(12),
+    paddingVertical: scale(14),
     paddingHorizontal: scale(20),
     gap: scale(8),
   },

@@ -69,13 +69,14 @@ const Yoruba = {
 };
 
 const resources = {
-  English: English,
-  Yoruba: Yoruba,
+  en: English,
+  yo: Yoruba,
 };
+
 // Get the device's locale
-const deviceLocale = Localization.locale;
-const supportedLocales = ['English', 'Yoruba'];
-const defaultLocale = 'English';
+const deviceLocale = Localization.locale.split('-')[0]; // Get just the language code (e.g., 'en' from 'en-US')
+const supportedLocales = ['en', 'yo'];
+const defaultLocale = 'en';
 
 // Check if the device locale is supported, otherwise use default
 const initialLocale = supportedLocales.includes(deviceLocale) ? deviceLocale : defaultLocale;

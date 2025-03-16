@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import Text from '../base/Text';
 import Button from '../base/Button';
 import LanguageToggle from '../language/LanguageToggle';
-import LanguageSelectionModal from '../language/LanguageSelectionModal';
 import { useLanguage } from '../../providers/LanguageProvider';
 import { useTheme } from '../../providers/ThemeProvider';
 
@@ -15,10 +15,14 @@ import { useTheme } from '../../providers/ThemeProvider';
 const LanguageSelectorExample: React.FC = () => {
   const { theme } = useTheme();
   const { currentLanguage, languages, isRTL } = useLanguage();
-  const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
 
   // Get current language details
   const currentLangDetails = languages.find(lang => lang.code === currentLanguage);
+
+  const handleOpenLanguageModal = () => {
+    router.push('/language-modal');
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -80,12 +84,10 @@ const LanguageSelectorExample: React.FC = () => {
         <Button
           title="Open Language Selection"
           translationKey="settings.selectLanguage"
-          onPress={() => setModalVisible(true)}
+          onPress={handleOpenLanguageModal}
           leftIcon={<Feather name="globe" size={20} color={theme.colors.onPrimary} />}
           style={styles.button}
         />
-
-        <LanguageSelectionModal visible={modalVisible} onClose={() => setModalVisible(false)} />
       </View>
 
       {/* Localized Content Example */}

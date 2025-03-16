@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Speech from 'expo-speech';
+import { Platform } from 'react-native';
 
 interface VoiceGuidanceContextType {
   isActive: boolean;
@@ -10,6 +11,7 @@ interface VoiceGuidanceContextType {
   stopVoiceGuidance: () => void;
   moveToNextElement: () => void;
   readText: (text: string) => Promise<void>;
+  registerElement: (id: string, text: string, type?: 'text' | 'input') => void;
 }
 
 const VoiceGuidanceContext = createContext<VoiceGuidanceContextType | undefined>(undefined);
@@ -35,6 +37,27 @@ export const VoiceGuidanceProvider: React.FC<VoiceGuidanceProviderProps> = ({ ch
     Array<{ id: string; text: string; type: 'text' | 'input' }>
   >([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isSpeechInitialized, setIsSpeechInitialized] = useState(false);
+
+  // Initialize speech engine on component mount
+  useEffect(() => {
+    const initSpeech = async () => {
+      try {
+        // Pre-warm the speech engine
+        await Speech.getAvailableVoicesAsync();
+        setIsSpeechInitialized(true);
+      } catch (error) {
+        console.error('Error initializing speech:', error);
+      }
+    };
+
+    initSpeech();
+
+    return () => {
+      // Clean up speech when component unmounts
+      Speech.stop();
+    };
+  }, []);
 
   const readText = useCallback(
     async (text: string) => {
@@ -59,13 +82,28 @@ export const VoiceGuidanceProvider: React.FC<VoiceGuidanceProviderProps> = ({ ch
           voice = voices.find(v => v.language.startsWith(languageCode));
         }
 
-        await Speech.speak(text, {
+        // Platform-specific optimizations
+        const rate = Platform.OS === 'android' ? 0.9 : 0.85; // Slightly faster on Android
+        const pitch = Platform.OS === 'android' ? 1.0 : 1.1; // Normal pitch on Android
+
+        // Pre-process text for better speech synthesis
+        const processedText = text.replace(/\s+/g, ' ').trim();
+
+        await Speech.speak(processedText, {
           language: languageCode,
-          rate: 0.85, // Slightly slower for better clarity
-          pitch: 1.1, // Slightly higher pitch for feminine voice
+          rate,
+          pitch,
           voice: voice?.identifier,
+          // Android-specific options
+          ...Platform.select({
+            android: {
+              // Lower quality but faster startup on Android
+              quality: 0.5, // Use a numeric value instead of enum
+            },
+            default: {},
+          }),
           onStart: () => {
-            console.log('Started speaking:', text);
+            console.log('Started speaking:', processedText);
           },
           onDone: () => {
             console.log('Done speaking');
@@ -95,13 +133,38 @@ export const VoiceGuidanceProvider: React.FC<VoiceGuidanceProviderProps> = ({ ch
     [i18n.language, isActive, currentElementId]
   );
 
+  const registerElement = useCallback(
+    (id: string, text: string, type: 'text' | 'input' = 'text') => {
+      setElements(prev => {
+        // Check if element already exists
+        const exists = prev.some(el => el.id === id);
+        if (exists) return prev;
+
+        // Add new element
+        return [...prev, { id, text, type }];
+      });
+    },
+    []
+  );
+
   const startVoiceGuidance = useCallback(() => {
     setIsActive(true);
     setCurrentIndex(0);
-    // Reset elements array with current screen elements
-    // This would be populated by the screen component
-    setElements([]);
-  }, []);
+
+    // If there are elements, set the first one as current
+    if (elements.length > 0) {
+      setCurrentElementId(elements[0].id);
+      setIsWaitingForInput(elements[0].type === 'input');
+    }
+  }, [elements]);
+
+  // When elements change and voice guidance is active, update current element if needed
+  useEffect(() => {
+    if (isActive && elements.length > 0 && !currentElementId) {
+      setCurrentElementId(elements[0].id);
+      setIsWaitingForInput(elements[0].type === 'input');
+    }
+  }, [isActive, elements, currentElementId]);
 
   const stopVoiceGuidance = useCallback(async () => {
     try {
@@ -133,6 +196,7 @@ export const VoiceGuidanceProvider: React.FC<VoiceGuidanceProviderProps> = ({ ch
     stopVoiceGuidance,
     moveToNextElement,
     readText,
+    registerElement,
   };
 
   return <VoiceGuidanceContext.Provider value={value}>{children}</VoiceGuidanceContext.Provider>;
