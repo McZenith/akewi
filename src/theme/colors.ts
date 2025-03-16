@@ -3,6 +3,7 @@ export const colors = {
   background: '#F6F6F6',
   white: '#FFFFFF',
   black: '#000000',
+  shadow: '#000000',
 
   // Text colors
   text: {
@@ -25,6 +26,8 @@ export const colors = {
   // Form colors
   form: {
     background: 'rgba(255, 255, 255, 0.95)',
+    backgroundFocused: '#FFFFFF',
+    backgroundError: 'rgba(255, 59, 48, 0.05)',
     border: '#C4C4C4',
     error: '#FF3B30',
   },
@@ -33,6 +36,7 @@ export const colors = {
   voice: {
     background: '#FF6363',
     active: '#FF8080',
+    backgroundLight: 'rgba(255, 99, 99, 0.05)',
   },
 
   // Gradient colors

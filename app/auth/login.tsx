@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,7 +19,8 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
-import VoiceButton from '../../src/components/base/VoiceButton';
+import { VoiceButton } from '../../src/components/base/VoiceButton';
+import { VoicedText } from '../../src/components/base/VoicedText';
 import LanguageSelector from '../../src/components/language/LanguageSelector';
 import Input from '../../src/components/base/Input';
 import SocialButton from '../../src/components/auth/SocialButton';
@@ -26,7 +28,6 @@ import { LOGIN_SCREEN_LAYOUT } from '../../src/constants/screens/auth';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { scale, verticalScale } from '../../src/utils/scaling';
-import Text from '../../src/components/base/Text';
 import { validateIdentifier } from '../../src/utils/validation';
 import { useAppDispatch } from '../../src/store/hooks';
 import { loginStart } from '../../src/store/slices/auth';
@@ -35,16 +36,32 @@ import logoImage from '../../assets/images/logo.png';
 import backgroundImage from '../../assets/images/background.png';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Header from '../../src/components/base/Header';
+import LanguageSelectionModal from '../../src/components/language/LanguageSelectionModal';
+import { useTranslation } from 'react-i18next';
+import i18next from '../../src/i18n';
+import { useVoiceGuidance } from '../../src/providers/VoiceGuidanceProvider';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
+interface SocialButtonProps {
+  provider: 'google' | 'apple';
+  onPress: () => void;
+  isLoading?: boolean;
+  voiceElementId: string;
+}
+
 const LoginScreen = () => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const [identifier, setIdentifier] = useState('');
   const [identifierType, setIdentifierType] = useState<'email' | 'phone' | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
+  const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState(i18next.language || 'English');
+  const { startVoiceGuidance, stopVoiceGuidance, readText, isActive, currentElementId } =
+    useVoiceGuidance();
 
   const buttonScale = useSharedValue(1);
   const formOpacity = useSharedValue(0);
@@ -81,45 +98,98 @@ const LoginScreen = () => {
   }));
 
   const handleVoicePress = () => {
-    // TODO: Implement voice functionality when voice recognition is ready
-    Alert.alert('Coming Soon', 'Voice recognition will be available in the next update');
+    if (isActive) {
+      stopVoiceGuidance();
+    } else {
+      startVoiceGuidance();
+      // Set a slight delay to ensure the voice guidance context is ready
+      setTimeout(() => {
+        readText(t('auth.description'));
+      }, 100);
+    }
   };
 
   const handleLanguagePress = () => {
-    // TODO: Implement language selection when i18n is ready
-    Alert.alert('Coming Soon', 'Language selection will be available in the next update');
+    setIsLanguageModalVisible(true);
+  };
+
+  const handleLanguageSelect = async (language: string) => {
+    try {
+      await i18next.changeLanguage(language);
+      setSelectedLanguage(language);
+      console.log('Language changed successfully to:', language);
+    } catch (error) {
+      console.error('Error changing language:', error);
+    }
+    setIsLanguageModalVisible(false);
   };
 
   const handleIdentifierChange = (text: string) => {
     setIdentifier(text);
-    setError(null);
+    setError('');
 
-    // Detect if input is email or phone
     if (text.includes('@')) {
       setIdentifierType('email');
-    } else if (/^[0-9+\s()-]+$/.test(text)) {
+    } else if (/\d/.test(text)) {
       setIdentifierType('phone');
     } else {
       setIdentifierType(null);
     }
+
+    // If voice guidance is active, read the input type
+    if (isActive && currentElementId === 'login-identifier') {
+      readText(getPlaceholder());
+    }
   };
 
   const handleContinue = async () => {
-    const validationError = validateIdentifier(identifier, identifierType);
+    // Trim the identifier to remove any whitespace
+    const trimmedIdentifier = identifier.trim();
+
+    // First validate the input
+    const validationError = validateIdentifier(trimmedIdentifier, identifierType);
     if (validationError) {
       setError(validationError);
+      readText(validationError);
       return;
     }
 
     try {
       setIsLoading(true);
-      await dispatch(loginStart({ identifier, type: identifierType })).unwrap();
+      await dispatch(
+        loginStart({
+          identifier: trimmedIdentifier,
+          type: identifierType,
+        })
+      ).unwrap();
       // Navigation will be handled by the auth state listener
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      let errorMessage = 'An unexpected error occurred';
+      if (err instanceof Error) {
+        // Handle specific error cases
+        if (err.message.includes('not found')) {
+          errorMessage = 'No account found with this email or phone number';
+        } else if (err.message.includes('invalid')) {
+          errorMessage = 'The email or phone number format is invalid';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      setError(errorMessage);
+      readText(errorMessage);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Add input placeholder based on type
+  const getPlaceholder = () => {
+    if (identifierType === 'email') {
+      return t('auth.input.placeholder.email');
+    } else if (identifierType === 'phone') {
+      return t('auth.input.placeholder.phone');
+    }
+    return t('auth.input.placeholder.default');
   };
 
   const handleGooglePress = async () => {
@@ -128,7 +198,9 @@ const LoginScreen = () => {
       await dispatch(loginStart({ provider: 'google' })).unwrap();
       // Navigation will be handled by the auth state listener
     } catch (err) {
-      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to sign in with Google');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to sign in with Google';
+      Alert.alert('Error', errorMessage);
+      readText(errorMessage);
     } finally {
       setIsSocialLoading(null);
     }
@@ -140,7 +212,9 @@ const LoginScreen = () => {
       await dispatch(loginStart({ provider: 'apple' })).unwrap();
       // Navigation will be handled by the auth state listener
     } catch (err) {
-      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to sign in with Apple');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to sign in with Apple';
+      Alert.alert('Error', errorMessage);
+      readText(errorMessage);
     } finally {
       setIsSocialLoading(null);
     }
@@ -159,7 +233,10 @@ const LoginScreen = () => {
             rightComponent={
               <>
                 <VoiceButton onPress={handleVoicePress} />
-                <LanguageSelector currentLanguage="English" onPress={handleLanguagePress} />
+                <LanguageSelector
+                  currentLanguage={selectedLanguage}
+                  onPress={handleLanguagePress}
+                />
               </>
             }
           />
@@ -187,73 +264,65 @@ const LoginScreen = () => {
               <Animated.View
                 entering={FadeIn.delay(400).duration(ANIMATION_CONFIG.DURATION.MEDIUM)}
               >
-                <Text style={styles.description}>
-                  Browse, listen, and share Oriki that celebrate heritage, lineage, and culture
-                </Text>
+                <VoicedText style={styles.description} voiceElementId="login-description">
+                  {t('auth.description')}
+                </VoicedText>
               </Animated.View>
 
-              <Animated.View
-                entering={FadeInUp.delay(500).duration(ANIMATION_CONFIG.DURATION.MEDIUM)}
-              >
-                <Input
-                  placeholder="Your email address or Phone number"
-                  value={identifier}
-                  onChangeText={handleIdentifierChange}
-                  keyboardType={identifierType === 'phone' ? 'phone-pad' : 'email-address'}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  error={error ?? undefined}
-                  editable={!isLoading}
-                />
-              </Animated.View>
+              <Input
+                value={identifier}
+                onChangeText={handleIdentifierChange}
+                placeholder={getPlaceholder()}
+                error={error}
+                voiceElementId="login-identifier"
+                onSubmitEditing={handleContinue}
+                returnKeyType="go"
+                keyboardType={identifierType === 'phone' ? 'phone-pad' : 'email-address'}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
 
               <AnimatedTouchableOpacity
-                style={[
-                  styles.continueButton,
-                  isLoading && styles.continueButtonDisabled,
-                  buttonAnimatedStyle,
-                ]}
+                style={[styles.continueButton, buttonAnimatedStyle]}
                 onPress={handleContinue}
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
-                activeOpacity={1}
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <ActivityIndicator color={colors.button.primaryText} />
+                  <ActivityIndicator color={colors.white} />
                 ) : (
-                  <Text style={styles.continueButtonText}>Continue</Text>
+                  <VoicedText style={styles.continueButtonText} voiceElementId="login-continue">
+                    {t('common.continue')}
+                  </VoicedText>
                 )}
               </AnimatedTouchableOpacity>
 
-              <Animated.Text
-                style={styles.alternativeText}
-                entering={FadeIn.delay(600).duration(ANIMATION_CONFIG.DURATION.MEDIUM)}
-              >
-                or
-              </Animated.Text>
-
-              <Animated.View
-                style={styles.socialButtonsContainer}
-                entering={FadeInUp.delay(700).duration(ANIMATION_CONFIG.DURATION.MEDIUM)}
-              >
+              <View style={styles.socialButtons}>
                 <SocialButton
                   provider="google"
                   onPress={handleGooglePress}
-                  style={isSocialLoading === 'google' && styles.socialButtonDisabled}
                   disabled={isSocialLoading !== null}
+                  voiceElementId="login-google"
                 />
                 <SocialButton
                   provider="apple"
                   onPress={handleApplePress}
-                  style={isSocialLoading === 'apple' && styles.socialButtonDisabled}
                   disabled={isSocialLoading !== null}
+                  voiceElementId="login-apple"
                 />
-              </Animated.View>
+              </View>
             </Animated.View>
           </Animated.View>
         </LinearGradient>
       </KeyboardAvoidingView>
+
+      <LanguageSelectionModal
+        visible={isLanguageModalVisible}
+        onClose={() => setIsLanguageModalVisible(false)}
+        onSelectLanguage={handleLanguageSelect}
+        currentLanguage={selectedLanguage}
+      />
     </SafeAreaView>
   );
 };
@@ -267,67 +336,58 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   background: {
-    ...LOGIN_SCREEN_LAYOUT.background,
     width: '100%',
     height: verticalScale(300),
+    position: 'absolute',
+    top: 0,
   },
   formContainer: {
-    ...LOGIN_SCREEN_LAYOUT.form.container,
     flex: 1,
-  },
-  logo: {
-    ...LOGIN_SCREEN_LAYOUT.form.logo,
-  },
-  description: {
-    ...LOGIN_SCREEN_LAYOUT.form.description,
-    color: colors.text.secondary,
-    fontFamily: typography.fontFamily.primary,
-    fontSize: typography.sizes.description,
-    fontWeight: typography.weights.medium,
-    lineHeight: scale(21),
-    textAlign: 'center',
-    marginBottom: scale(32),
-  },
-  continueButton: {
-    ...LOGIN_SCREEN_LAYOUT.form.continueButton,
-    backgroundColor: '#090909',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: scale(345),
-    borderRadius: 100,
-  },
-  continueButtonDisabled: {
-    opacity: 0.7,
-  },
-  continueButtonText: {
-    color: colors.button.primaryText,
-    fontFamily: typography.fontFamily.primary,
-    fontSize: typography.sizes.button,
-    fontWeight: typography.weights.semiBold,
-    lineHeight: scale(24),
-    letterSpacing: -0.5,
-  },
-  alternativeText: {
-    ...LOGIN_SCREEN_LAYOUT.alternative,
-    color: colors.text.alternative,
-    fontFamily: typography.fontFamily.primary,
-    fontSize: typography.sizes.md,
-    fontWeight: typography.weights.medium,
-    lineHeight: scale(22),
-    textAlign: 'center',
-    marginVertical: scale(16),
-  },
-  socialButtonsContainer: {
-    ...LOGIN_SCREEN_LAYOUT.social.container,
-    width: scale(345),
-  },
-  socialButtonDisabled: {
-    opacity: 0.7,
+    borderTopLeftRadius: scale(24),
+    borderTopRightRadius: scale(24),
+    backgroundColor: colors.background,
+    paddingTop: verticalScale(32),
   },
   formContent: {
     width: '100%',
     alignItems: 'center',
+    paddingHorizontal: scale(16),
+  },
+  logo: {
+    width: scale(120),
+    height: scale(120),
+    marginBottom: verticalScale(24),
+  },
+  description: {
+    fontSize: typography.sizes.lg,
+    fontFamily: typography.fontFamily.primary,
+    color: colors.text.primary,
+    textAlign: 'center',
+    marginBottom: verticalScale(32),
     paddingHorizontal: scale(24),
+    borderRadius: scale(4),
+  },
+  continueButton: {
+    backgroundColor: colors.button.primary,
+    borderRadius: scale(100),
+    paddingVertical: verticalScale(16),
+    width: scale(345),
+    alignItems: 'center',
+    marginTop: verticalScale(24),
+  },
+  continueButtonText: {
+    fontSize: typography.sizes.button,
+    fontFamily: typography.fontFamily.primary,
+    fontWeight: typography.weights.semiBold,
+    color: colors.button.primaryText,
+    letterSpacing: -0.5,
+  },
+  socialButtons: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: verticalScale(16),
+    marginTop: verticalScale(24),
+    width: scale(345),
   },
 });
 

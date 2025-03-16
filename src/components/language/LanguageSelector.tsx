@@ -5,6 +5,7 @@ import { typography } from '../../theme/typography';
 import { scale } from '../../utils/scaling';
 import Text from '../base/Text';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 interface LanguageSelectorProps {
   currentLanguage: string;
@@ -12,18 +13,22 @@ interface LanguageSelectorProps {
   style?: any;
 }
 
-const LanguageSelector: React.FC<LanguageSelectorProps> = ({ currentLanguage, onPress, style }) => (
-  <TouchableOpacity
-    style={[styles.container, style]}
-    onPress={onPress}
-    activeOpacity={0.7}
-    accessibilityRole="button"
-    accessibilityLabel={`Change language. Current language is ${currentLanguage}`}
-  >
-    <Ionicons name="globe-outline" size={scale(20)} color={colors.text.primary} />
-    <Text style={styles.text}>{currentLanguage}</Text>
-  </TouchableOpacity>
-);
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({ currentLanguage, onPress, style }) => {
+  const { t } = useTranslation();
+
+  return (
+    <TouchableOpacity
+      style={[styles.container, style]}
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={t('language.change', { current: currentLanguage })}
+    >
+      <Ionicons name="globe-outline" size={scale(20)} color={colors.text.primary} />
+      <Text style={styles.text}>{currentLanguage}</Text>
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

@@ -52,9 +52,9 @@ const LanguageToggle: React.FC<LanguageToggleProps> = ({
   // Get display text for the languages
   const getLanguageDisplay = (code: string) => {
     switch (code) {
-      case 'en':
+      case 'English':
         return 'EN';
-      case 'yo':
+      case 'Yoruba':
         return 'YO';
       default:
         return code.toUpperCase();

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   TextInput,
@@ -7,10 +7,14 @@ import {
   NativeSyntheticEvent,
   TextInputFocusEventData,
   Platform,
+  Keyboard,
+  TextInputSubmitEditingEventData,
 } from 'react-native';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { scale, verticalScale } from '../../utils/scaling';
+import { useVoiceGuidance } from '../../providers/VoiceGuidanceProvider';
+import { Ionicons } from '@expo/vector-icons';
 
 interface InputProps extends Omit<TextInputProps, 'style'> {
   error?: string;
@@ -19,6 +23,7 @@ interface InputProps extends Omit<TextInputProps, 'style'> {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   label?: string;
+  voiceElementId?: string;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -31,9 +36,25 @@ const Input: React.FC<InputProps> = ({
   onBlur,
   label,
   placeholder,
+  voiceElementId,
+  onSubmitEditing,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+  const { isActive, currentElementId, isWaitingForInput, moveToNextElement, readText } =
+    useVoiceGuidance();
+
+  const isCurrentElement = voiceElementId && voiceElementId === currentElementId;
+
+  useEffect(() => {
+    if (isCurrentElement && inputRef.current) {
+      inputRef.current.focus();
+      if (placeholder) {
+        readText(placeholder);
+      }
+    }
+  }, [isCurrentElement, placeholder, readText]);
 
   const handleFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setIsFocused(true);
@@ -45,12 +66,26 @@ const Input: React.FC<InputProps> = ({
     onBlur?.(e);
   };
 
+  const handleSubmitEditing = (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => {
+    if (isCurrentElement) {
+      moveToNextElement();
+    }
+    onSubmitEditing?.(e);
+  };
+
+  const handleKeyPress = (e: any) => {
+    if (isCurrentElement && e.nativeEvent.key === 'Enter') {
+      moveToNextElement();
+    }
+  };
+
   return (
     <View
       style={[
         styles.container,
         isFocused && styles.containerFocused,
         error && styles.containerError,
+        isCurrentElement && styles.containerVoiceActive,
         containerStyle,
       ]}
       accessible={true}
@@ -67,6 +102,7 @@ const Input: React.FC<InputProps> = ({
       )}
 
       <TextInput
+        ref={inputRef}
         style={[
           styles.input,
           leftIcon && styles.inputWithLeftIcon,
@@ -77,6 +113,8 @@ const Input: React.FC<InputProps> = ({
         placeholder={placeholder}
         onFocus={handleFocus}
         onBlur={handleBlur}
+        onSubmitEditing={handleSubmitEditing}
+        onKeyPress={handleKeyPress}
         selectionColor={colors.text.primary}
         accessibilityRole="text"
         accessibilityLabel={label || placeholder}
@@ -89,6 +127,12 @@ const Input: React.FC<InputProps> = ({
           {rightIcon}
         </View>
       )}
+
+      {isCurrentElement && (
+        <View style={styles.voiceIcon}>
+          <Ionicons name="mic" size={20} color={colors.voice.background} />
+        </View>
+      )}
     </View>
   );
 };
@@ -99,14 +143,14 @@ const styles = StyleSheet.create({
     height: verticalScale(52),
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F8F8',
+    backgroundColor: colors.form.background,
     borderRadius: scale(8),
-    borderWidth: Platform.select({ ios: StyleSheet.hairlineWidth, android: 1 }),
-    borderColor: '#E8E8E8',
+    borderWidth: 1,
+    borderColor: colors.form.border,
     paddingHorizontal: scale(16),
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: colors.shadow,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
         shadowRadius: 1,
@@ -118,10 +162,12 @@ const styles = StyleSheet.create({
   },
   containerFocused: {
     borderColor: colors.text.primary,
-    borderWidth: Platform.select({ ios: 1, android: 1.5 }),
+    borderWidth: 1.5,
+    backgroundColor: colors.form.backgroundFocused,
     ...Platform.select({
       ios: {
         shadowOpacity: 0.1,
+        shadowRadius: 2,
       },
       android: {
         elevation: 2,
@@ -130,6 +176,12 @@ const styles = StyleSheet.create({
   },
   containerError: {
     borderColor: colors.form.error,
+    backgroundColor: colors.form.backgroundError,
+  },
+  containerVoiceActive: {
+    borderColor: colors.voice.background,
+    borderWidth: 2,
+    backgroundColor: colors.voice.backgroundLight,
   },
   input: {
     flex: 1,
@@ -142,6 +194,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       android: {
         paddingVertical: 0,
+        textAlignVertical: 'center',
       },
     }),
   },
@@ -156,6 +209,13 @@ const styles = StyleSheet.create({
   },
   rightIcon: {
     marginLeft: scale(8),
+  },
+  voiceIcon: {
+    marginLeft: scale(8),
+    width: scale(20),
+    height: scale(20),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

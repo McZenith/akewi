@@ -1,13 +1,34 @@
-import en from './locales/en.json';
-
-export type TranslationKeys = typeof en;
-export type CommonKeys = keyof typeof en.common;
+import 'i18next';
 
 declare module 'i18next' {
   interface CustomTypeOptions {
-    defaultNS: 'common';
+    defaultNS: 'translation';
     resources: {
-      common: typeof en;
+      translation: {
+        common: {
+          continue: string;
+          or: string;
+        };
+        auth: {
+          description: string;
+          input: {
+            placeholder: {
+              default: string;
+              email: string;
+              phone: string;
+            };
+          };
+          social: {
+            google: string;
+            apple: string;
+          };
+        };
+        language: {
+          select: string;
+          english: string;
+          yoruba: string;
+        };
+      };
     };
   }
 }

@@ -450,12 +450,12 @@ interface LanguageSelectionModalProps {
   onClose={() => setLanguageModalVisible(false)}
   languages={[
     {
-      code: 'en-GB',
+      code: 'English',
       name: 'English UK',
       flag: <UKFlagIcon />,
-      selected: currentLanguage === 'en-GB',
+      selected: currentLanguage === 'English',
     },
-    { code: 'yo', name: 'Yoruba', flag: <YorubaFlagIcon />, selected: currentLanguage === 'yo' },
+    { code: 'Yoruba', name: 'Yoruba', flag: <YorubaFlagIcon />, selected: currentLanguage === 'Yoruba' },
   ]}
   onSelectLanguage={code => {
     setCurrentLanguage(code);

@@ -4,6 +4,8 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { scale, verticalScale } from '../../utils/scaling';
 import Text from '../base/Text';
+import { useTranslation } from 'react-i18next';
+import { useVoiceGuidance } from '../../providers/VoiceGuidanceProvider';
 import googleIcon from '../../../assets/icons/google.png';
 import appleIcon from '../../../assets/icons/apple.png';
 
@@ -12,18 +14,40 @@ interface SocialButtonProps {
   onPress: () => void;
   style?: any;
   disabled?: boolean;
+  voiceElementId?: string;
 }
 
-const SocialButton: React.FC<SocialButtonProps> = ({ provider, onPress, style, disabled }) => {
+const SocialButton: React.FC<SocialButtonProps> = ({
+  provider,
+  onPress,
+  style,
+  disabled,
+  voiceElementId,
+}) => {
+  const { t } = useTranslation();
+  const { isActive, currentElementId, readText } = useVoiceGuidance();
   const isGoogle = provider === 'google';
+  const isCurrentElement = voiceElementId && voiceElementId === currentElementId;
+
+  const handlePress = () => {
+    if (isCurrentElement) {
+      readText(t(`auth.social.${provider}`));
+    }
+    onPress();
+  };
 
   return (
     <TouchableOpacity
-      style={[styles.container, isGoogle ? styles.googleButton : styles.appleButton, style]}
-      onPress={onPress}
+      style={[
+        styles.container,
+        isGoogle ? styles.googleButton : styles.appleButton,
+        isCurrentElement && styles.voiceActiveButton,
+        style,
+      ]}
+      onPress={handlePress}
       activeOpacity={0.7}
       accessibilityRole="button"
-      accessibilityLabel={`Continue with ${isGoogle ? 'Google' : 'Apple'}`}
+      accessibilityLabel={t(`auth.social.${provider}`)}
       disabled={disabled}
     >
       {disabled ? (
@@ -31,7 +55,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({ provider, onPress, style, d
       ) : (
         <>
           <Image source={isGoogle ? googleIcon : appleIcon} style={styles.icon} />
-          <Text style={styles.text}>Continue with {isGoogle ? 'Google' : 'Apple'}</Text>
+          <Text style={styles.text}>{t(`auth.social.${provider}`)}</Text>
         </>
       )}
     </TouchableOpacity>
@@ -59,6 +83,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.button.social.border,
+  },
+  voiceActiveButton: {
+    borderColor: colors.voice.background,
+    borderWidth: 2,
+    backgroundColor: 'rgba(255, 99, 99, 0.05)',
   },
   icon: {
     width: scale(24),

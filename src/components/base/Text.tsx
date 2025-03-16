@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import useAppTranslation, { TranslationKey } from '../../hooks/useAppTranslation';
+import { useVoiceGuidance } from '../../providers/VoiceGuidanceProvider';
 
 export type TextVariant =
   | 'h1'
@@ -37,6 +38,8 @@ export interface TextProps extends RNTextProps, Pick<AccessibilityProps, 'access
   accessibilityRole?: AccessibilityProps['accessibilityRole'];
   // Whether this text is a heading and what level (1-6)
   accessibilityHeadingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
+  // Voice guidance element ID
+  voiceElementId?: string;
 }
 
 const Text = ({
@@ -51,10 +54,12 @@ const Text = ({
   isAccessibilityOnly = false,
   accessibilityRole,
   accessibilityHeadingLevel,
+  voiceElementId,
   ...rest
 }: TextProps) => {
   const { theme } = useTheme();
   const { t } = useAppTranslation();
+  const { isActive, currentElementId } = useVoiceGuidance();
 
   // Build styles based on variant and theme
   const getVariantStyle = (variant: TextVariant): TextStyle => {
@@ -118,7 +123,7 @@ const Text = ({
   // Map variant to appropriate accessibility role if not explicitly set
   const getAccessibilityRole = (): AccessibilityProps['accessibilityRole'] => {
     if (accessibilityRole) return accessibilityRole;
-    
+
     // Default mapping based on variant
     if (variant.startsWith('h')) return 'header';
     if (variant === 'button') return 'text';
@@ -130,7 +135,7 @@ const Text = ({
     if (accessibilityHeadingLevel) {
       return `Heading level ${accessibilityHeadingLevel}`;
     }
-    
+
     if (variant === 'h1') return 'Heading level 1';
     if (variant === 'h2') return 'Heading level 2';
     if (variant === 'h3') return 'Heading level 3';
@@ -146,12 +151,13 @@ const Text = ({
     align && { textAlign: align },
     color && { color: color === 'text' ? theme.colors.text : color },
     isAccessibilityOnly && styles.accessibilityOnly,
+    voiceElementId && voiceElementId === currentElementId && styles.voiceActive,
     style,
   ];
 
   return (
-    <RNText 
-      style={textStyles} 
+    <RNText
+      style={textStyles}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole={getAccessibilityRole()}
       accessibilityHint={getHeadingLevel()}
@@ -166,9 +172,15 @@ const Text = ({
 const styles = StyleSheet.create({
   accessibilityOnly: {
     position: 'absolute',
-    height: 1,
     width: 1,
+    height: 1,
+    padding: 0,
+    margin: -1,
     overflow: 'hidden',
+    opacity: 0,
+  },
+  voiceActive: {
+    color: '#FF6363',
   },
 });
 

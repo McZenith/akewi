@@ -1,143 +1,241 @@
 import React from 'react';
 import {
   View,
-  Modal,
-  TouchableOpacity,
   StyleSheet,
-  FlatList,
-  TouchableWithoutFeedback,
+  TouchableOpacity,
+  Modal,
+  Image,
+  Platform,
+  Dimensions,
+  Pressable,
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import { PanGestureHandler } from 'react-native-gesture-handler';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+  useAnimatedGestureHandler,
+  runOnJS,
+} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { useLanguage } from '../../providers/LanguageProvider';
-import { useTheme } from '../../providers/ThemeProvider';
+import { useTranslation } from 'react-i18next';
+import { scale, verticalScale } from '../../utils/scaling';
 import Text from '../base/Text';
-import { supportedLanguages } from '../../contexts/LanguageContext';
+import ukFlag from '../../../assets/icons/uk-flag.png';
+import nigeriaFlag from '../../../assets/icons/nigeria-flag.png';
 
-type Language = {
+interface Language {
   code: string;
-  name: string;
-  nativeName: string;
-};
+  displayName: string;
+  flag?: any;
+}
 
-type LanguageSelectionModalProps = {
+interface LanguageSelectionModalProps {
   visible: boolean;
   onClose: () => void;
-};
-const LanguageSelectionModal = ({ visible, onClose }: LanguageSelectionModalProps) => {
-  const { currentLanguage, changeLanguage } = useLanguage();
-  const { t } = useTranslation();
-  const { theme } = useTheme();
-  const { colors, spacing, borderRadius, shadows } = theme;
+  onSelectLanguage: (language: string) => void;
+  currentLanguage: string;
+}
 
-  const handleLanguageSelect = (languageCode: string) => {
-    changeLanguage(languageCode);
+const languages: Language[] = [
+  {
+    code: 'English',
+    displayName: 'English',
+    flag: ukFlag,
+  },
+  {
+    code: 'Yoruba',
+    displayName: 'Yoruba',
+    flag: nigeriaFlag,
+  },
+];
+
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const LanguageSelectionModal: React.FC<LanguageSelectionModalProps> = ({
+  visible,
+  onClose,
+  onSelectLanguage,
+  currentLanguage,
+}) => {
+  const { t } = useTranslation();
+  const translateY = useSharedValue(SCREEN_HEIGHT);
+  const opacity = useSharedValue(0);
+
+  const handleLanguageSelect = (code: string) => {
+    onSelectLanguage(code);
     onClose();
   };
 
-  const styles = StyleSheet.create({
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'center',
-      alignItems: 'center',
+  const animatedContainerStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  const animatedOverlayStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  }));
+
+  const gestureHandler = useAnimatedGestureHandler({
+    onStart: (_, ctx: any) => {
+      ctx.startY = translateY.value;
     },
-    modalContainer: {
-      width: '80%',
-      maxHeight: '70%',
-      backgroundColor: colors.card,
-      borderRadius: borderRadius.lg,
-      ...shadows.md,
-      overflow: 'hidden',
+    onActive: (event, ctx) => {
+      translateY.value = ctx.startY + event.translationY;
     },
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: spacing.md,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    closeButton: {
-      padding: spacing.xs,
-    },
-    languageItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: spacing.md,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    selectedLanguage: {
-      backgroundColor: colors.primaryLight,
-    },
-    languageInfo: {
-      flex: 1,
-    },
-    checkIcon: {
-      marginLeft: spacing.sm,
-    },
-    separator: {
-      height: 1,
-      backgroundColor: colors.border,
+    onEnd: event => {
+      if (event.translationY > 100) {
+        translateY.value = withSpring(SCREEN_HEIGHT);
+        opacity.value = withTiming(0, { duration: 150 });
+        runOnJS(onClose)();
+      } else {
+        translateY.value = withSpring(0);
+      }
     },
   });
 
-  const renderLanguageItem = ({ item }: { item: Language }) => {
-    const isSelected = currentLanguage === item.code;
-
-    return (
-      <TouchableOpacity
-        style={[styles.languageItem, isSelected && styles.selectedLanguage]}
-        onPress={() => handleLanguageSelect(item.code)}
-        accessibilityRole="radio"
-        accessibilityState={{ checked: isSelected }}
-        accessibilityLabel={item.name}
-      >
-        <View style={styles.languageInfo}>
-          <Text variant="subtitle1" style={{ marginBottom: spacing.xs }}>
-            {item.name}
-          </Text>
-          <Text variant="body2" color={colors.textSecondary}>
-            {item.nativeName}
-          </Text>
-        </View>
-        {isSelected && (
-          <Ionicons name="checkmark" size={24} color={colors.primary} style={styles.checkIcon} />
-        )}
-      </TouchableOpacity>
-    );
-  };
+  React.useEffect(() => {
+    if (visible) {
+      opacity.value = withTiming(1, { duration: 150 });
+      translateY.value = withSpring(0, {
+        damping: 20,
+        stiffness: 90,
+        mass: 0.4,
+      });
+    } else {
+      opacity.value = withTiming(0, { duration: 150 });
+      translateY.value = withSpring(SCREEN_HEIGHT, {
+        damping: 20,
+        stiffness: 90,
+        mass: 0.4,
+      });
+    }
+  }, [visible]);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.modalOverlay}>
-          <TouchableWithoutFeedback>
-            <View style={styles.modalContainer}>
-              <View style={styles.header}>
-                <Text variant="subtitle1">{t('settings.selectLanguage')}</Text>
+    <Modal
+      visible={visible}
+      transparent
+      statusBarTranslucent
+      animationType="none"
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalContainer}>
+        <Animated.View style={[styles.overlay, animatedOverlayStyle]}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+          <Animated.View style={[styles.container, animatedContainerStyle]}>
+            <PanGestureHandler onGestureEvent={gestureHandler}>
+              <Animated.View>
+                <Pressable onPress={onClose}>
+                  <View style={styles.handle} />
+                </Pressable>
+              </Animated.View>
+            </PanGestureHandler>
+            <Text style={styles.title}>{t('language.select')}</Text>
+
+            {languages.map((language, index) => (
+              <React.Fragment key={language.code}>
                 <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={onClose}
-                  accessibilityLabel={t('common.close')}
-                  accessibilityRole="button"
+                  style={styles.languageOption}
+                  onPress={() => handleLanguageSelect(language.code)}
+                  activeOpacity={0.7}
                 >
-                  <Ionicons name="close" size={24} color={colors.text} />
+                  <View style={styles.languageContent}>
+                    <Image source={language.flag} style={styles.flagIcon} resizeMode="contain" />
+                    <Text style={styles.languageName}>{language.displayName}</Text>
+                  </View>
+                  <Ionicons
+                    name={
+                      currentLanguage === language.code ? 'checkmark-circle' : 'radio-button-off'
+                    }
+                    size={24}
+                    color={currentLanguage === language.code ? '#00BA88' : '#C4C4C4'}
+                  />
                 </TouchableOpacity>
-              </View>
-              <FlatList
-                data={supportedLanguages}
-                renderItem={renderLanguageItem}
-                keyExtractor={item => item.code}
-                ItemSeparatorComponent={() => <View style={styles.separator} />}
-              />
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
+                {index < languages.length - 1 && <View style={styles.divider} />}
+              </React.Fragment>
+            ))}
+          </Animated.View>
+        </Animated.View>
+      </View>
     </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    margin: 0,
+    padding: 0,
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'transparent',
+  },
+  container: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: scale(24),
+    borderTopRightRadius: scale(24),
+    paddingTop: scale(12),
+    paddingHorizontal: scale(16),
+    paddingBottom: Platform.OS === 'ios' ? scale(34) : scale(16),
+    width: '100%',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 24,
+      },
+    }),
+  },
+  handle: {
+    alignSelf: 'center',
+    width: scale(32),
+    height: scale(4),
+    backgroundColor: '#E8E8E8',
+    borderRadius: scale(2),
+    marginBottom: scale(16),
+  },
+  title: {
+    fontSize: scale(18),
+    fontWeight: '600',
+    color: '#090909',
+    marginBottom: scale(16),
+    textAlign: 'center',
+  },
+  languageOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: scale(16),
+    paddingHorizontal: scale(8),
+  },
+  languageContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(12),
+  },
+  flagIcon: {
+    width: scale(24),
+    height: scale(24),
+    borderRadius: scale(12),
+  },
+  languageName: {
+    fontSize: scale(16),
+    fontWeight: '500',
+    color: '#090909',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E8E8E8',
+    width: '100%',
+  },
+});
 
 export default LanguageSelectionModal;
