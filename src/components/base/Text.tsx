@@ -7,7 +7,7 @@ import {
   TextStyle,
   AccessibilityProps,
 } from 'react-native';
-import { useTheme } from '../providers/ThemeProvider';
+import { useTheme } from '../../providers/ThemeProvider';
 import useAppTranslation, { TranslationKey } from '../../hooks/useAppTranslation';
 
 export type TextVariant =

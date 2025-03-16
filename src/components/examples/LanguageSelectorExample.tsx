@@ -5,8 +5,8 @@ import Text from '../base/Text';
 import Button from '../base/Button';
 import LanguageToggle from '../language/LanguageToggle';
 import LanguageSelectionModal from '../language/LanguageSelectionModal';
-import { useLanguage } from '../providers/LanguageProvider';
-import { useTheme } from '../providers/ThemeProvider';
+import { useLanguage } from '../../providers/LanguageProvider';
+import { useTheme } from '../../providers/ThemeProvider';
 
 /**
  * LanguageSelectorExample Component

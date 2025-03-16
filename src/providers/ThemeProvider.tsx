@@ -1,8 +1,8 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
-import { useAppSelector } from '../../store';
-import { selectTheme } from '../../store/selectors/settingsSelectors';
-import { lightTheme, darkTheme } from '../../constants/theme';
+import { useAppSelector } from '../store';
+import { selectTheme } from '../store/selectors/settingsSelectors';
+import { lightTheme, darkTheme } from '../constants/theme';
 
 // Define the theme type
 export type Theme = typeof lightTheme;

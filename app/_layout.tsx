@@ -1,9 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import StoreProvider from '../src/components/providers/StoreProvider';
-import ThemeProvider from '../src/components/providers/ThemeProvider';
-import { LanguageProvider } from '../src/components/providers/LanguageProvider';
+import { StoreProvider, ThemeProvider, LanguageProvider } from '../src/providers';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function RootLayout() {

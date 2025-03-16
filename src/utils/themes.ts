@@ -1,4 +1,4 @@
-import { Theme } from '../components/providers/ThemeProvider';
+import { Theme } from '../providers';
 import { Platform } from 'react-native';
 
 // Helper function to get shadow styles based on elevation

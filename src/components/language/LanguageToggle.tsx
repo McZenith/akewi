@@ -9,9 +9,9 @@ import {
   Easing,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../providers/ThemeProvider';
+import { useTheme } from '../../providers/ThemeProvider';
 import Text from '../base/Text';
-import { useLanguage } from '../providers/LanguageProvider';
+import { useLanguage } from '../../providers/LanguageProvider';
 
 export interface LanguageToggleProps {
   style?: ViewStyle;

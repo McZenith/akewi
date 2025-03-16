@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import { useLanguage } from '../providers/LanguageProvider';
-import { useTheme } from '../providers/ThemeProvider';
+import { useLanguage } from '../../providers/LanguageProvider';
+import { useTheme } from '../../providers/ThemeProvider';
 import Text from '../base/Text';
 import { supportedLanguages } from '../../contexts/LanguageContext';
 

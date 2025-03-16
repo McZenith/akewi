@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import LanguageSelectorExample from '../src/components/examples/LanguageSelectorExample';
-import { useTheme } from '../src/components/providers/ThemeProvider';
+import { useTheme } from '../src/providers';
 
 /**
  * Home screen that showcases the Language Selector components

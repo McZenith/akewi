@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as LanguageService from '../../services/LanguageService';
+import * as LanguageService from '../services/LanguageService';
 
 export interface LanguageContextType {
   currentLanguage: string;

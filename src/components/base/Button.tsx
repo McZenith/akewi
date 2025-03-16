@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { useTheme } from '../providers/ThemeProvider';
+import { useTheme } from '../../providers/ThemeProvider';
 import Text from './Text';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'text';
