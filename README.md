@@ -1,50 +1,63 @@
+# Akewi App
 
-# TypeScript
+## Overview
 
-[![CI](https://github.com/microsoft/TypeScript/actions/workflows/ci.yml/badge.svg)](https://github.com/microsoft/TypeScript/actions/workflows/ci.yml)
-[![npm version](https://badge.fury.io/js/typescript.svg)](https://www.npmjs.com/package/typescript)
-[![Downloads](https://img.shields.io/npm/dm/typescript.svg)](https://www.npmjs.com/package/typescript)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/microsoft/TypeScript/badge)](https://securityscorecards.dev/viewer/?uri=github.com/microsoft/TypeScript)
+Akewi is a React Native application built with Expo, TypeScript, and Redux for state management. It follows a file-based routing structure using Expo Router and supports multiple languages.
 
+## Project Structure
 
-[TypeScript](https://www.typescriptlang.org/) is a language for application-scale JavaScript. TypeScript adds optional types to JavaScript that support tools for large-scale JavaScript applications for any browser, for any host, on any OS. TypeScript compiles to readable, standards-based JavaScript. Try it out at the [playground](https://www.typescriptlang.org/play/), and stay up to date via [our blog](https://blogs.msdn.microsoft.com/typescript) and [Twitter account](https://twitter.com/typescript).
-
-Find others who are using TypeScript at [our community page](https://www.typescriptlang.org/community/).
-
-## Installing
-
-For the latest stable version:
-
-```bash
-npm install -D typescript
+```
+├── app/                   # Expo Router file-based navigation
+├── assets/                # Static assets like images, fonts, etc.
+│   ├── images/
+│   └── icons/
+├── components/            # Reusable UI components
+│   ├── common/            # Shared components across features
+│   ├── layout/            # Layout components (headers, containers, etc.)
+│   └── ui/                # Basic UI components (buttons, inputs, etc.)
+├── constants/             # App constants, theme variables, etc.
+├── hooks/                 # Custom React hooks
+├── localization/          # i18n setup and translation files
+│   └── translations/
+├── services/              # API services, local storage, etc.
+├── store/                 # Redux store configuration
+│   ├── slices/            # Redux toolkit slices
+│   └── thunks/            # Async actions
+├── types/                 # TypeScript type definitions
+└── utils/                 # Utility functions
 ```
 
-For our nightly builds:
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v14+)
+- npm or yarn
+- Expo CLI
+
+### Installation
 
 ```bash
-npm install -D typescript@next
+# Install dependencies
+npm install
+
+# Start the development server
+npm start
 ```
 
-## Contribute
+## Development Guidelines
 
-There are many ways to [contribute](https://github.com/microsoft/TypeScript/blob/main/CONTRIBUTING.md) to TypeScript.
-* [Submit bugs](https://github.com/microsoft/TypeScript/issues) and help us verify fixes as they are checked in.
-* Review the [source code changes](https://github.com/microsoft/TypeScript/pulls).
-* Engage with other TypeScript users and developers on [StackOverflow](https://stackoverflow.com/questions/tagged/typescript).
-* Help each other in the [TypeScript Community Discord](https://discord.gg/typescript).
-* Join the [#typescript](https://twitter.com/search?q=%23TypeScript) discussion on Twitter.
-* [Contribute bug fixes](https://github.com/microsoft/TypeScript/blob/main/CONTRIBUTING.md).
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see
-the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com)
-with any additional questions or comments.
+- Use TypeScript for all components and files
+- Follow component-based architecture
+- Use Redux for global state management
+- Use Expo Router for navigation
+- Support multiple languages through i18n
 
 ## Documentation
 
-*  [TypeScript in 5 minutes](https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes.html)
-*  [Programming handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
-*  [Homepage](https://www.typescriptlang.org/)
+See the `docs/` folder for detailed documentation, including:
 
-## Roadmap
-
-For details on our planned features and future direction, please refer to our [roadmap](https://github.com/microsoft/TypeScript/wiki/Roadmap).
+- Design system
+- Component catalog
+- Screen implementations
+- State management

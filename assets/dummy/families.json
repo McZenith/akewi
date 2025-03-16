@@ -1,0 +1,77 @@
+[
+  {
+    "id": "1",
+    "name": "Adéwálé",
+    "region": "Osun"
+  },
+  {
+    "id": "2",
+    "name": "Ogunlana",
+    "region": "Lagos"
+  },
+  {
+    "id": "3",
+    "name": "Aladejobi",
+    "region": "Oyo"
+  },
+  {
+    "id": "4",
+    "name": "Adegoke",
+    "region": "Osun"
+  },
+  {
+    "id": "5",
+    "name": "Olawale",
+    "region": "Lagos"
+  },
+  {
+    "id": "6",
+    "name": "Adeyemi",
+    "region": "Oyo"
+  },
+  {
+    "id": "7",
+    "name": "Ogunbiyi",
+    "region": "Osun"
+  },
+  {
+    "id": "8",
+    "name": "Adeleke",
+    "region": "Osun"
+  },
+  {
+    "id": "9",
+    "name": "Olajuwon",
+    "region": "Ogun"
+  },
+  {
+    "id": "10",
+    "name": "Olusola",
+    "region": "Ekiti"
+  },
+  {
+    "id": "11",
+    "name": "Afolayan",
+    "region": "Kwara"
+  },
+  {
+    "id": "12",
+    "name": "Babatunde",
+    "region": "Lagos"
+  },
+  {
+    "id": "13",
+    "name": "Fadeyi",
+    "region": "Oyo"
+  },
+  {
+    "id": "14",
+    "name": "Olatunji",
+    "region": "Ogun"
+  },
+  {
+    "id": "15",
+    "name": "Adekunle",
+    "region": "Ondo"
+  }
+]

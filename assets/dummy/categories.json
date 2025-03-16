@@ -1,0 +1,47 @@
+[
+  {
+    "id": "cat1",
+    "title": "Oriki Idílé",
+    "description": "Family/Lineage Oriki",
+    "count": 157,
+    "backgroundColor": "#C73D10",
+    "textColor": "#FFFFFF",
+    "iconType": "family"
+  },
+  {
+    "id": "cat2",
+    "title": "Oriki Orílè-èdè",
+    "description": "Community/Regional Oriki",
+    "count": 92,
+    "backgroundColor": "#2A9D8F",
+    "textColor": "#FFFFFF",
+    "iconType": "community"
+  },
+  {
+    "id": "cat3",
+    "title": "Oriki Àwọn Òrìṣà",
+    "description": "Deity/Spiritual Oriki",
+    "count": 63,
+    "backgroundColor": "#E76F51",
+    "textColor": "#FFFFFF",
+    "iconType": "deity"
+  },
+  {
+    "id": "cat4",
+    "title": "Oriki Ìṣẹ́",
+    "description": "Occupational Oriki",
+    "count": 45,
+    "backgroundColor": "#264653",
+    "textColor": "#FFFFFF",
+    "iconType": "occupation"
+  },
+  {
+    "id": "cat5",
+    "title": "Oriki Ẹ̀yà",
+    "description": "Ethnic Group Oriki",
+    "count": 78,
+    "backgroundColor": "#E9C46A",
+    "textColor": "#000000",
+    "iconType": "ethnic"
+  }
+]

@@ -1,0 +1,88 @@
+[
+  {
+    "userId": "user1",
+    "contributions": [
+      {
+        "id": "oriki1",
+        "title": "Oriki Idílé Adéwálé",
+        "type": "family",
+        "dateAdded": "2023-06-12",
+        "hasAudio": true,
+        "isSynchronized": {
+          "yoruba": true,
+          "english": true
+        },
+        "status": "approved"
+      },
+      {
+        "id": "oriki5",
+        "title": "Oriki Òkun",
+        "type": "cultural",
+        "dateAdded": "2023-06-05",
+        "hasAudio": true,
+        "isSynchronized": {
+          "yoruba": true,
+          "english": false
+        },
+        "status": "pending"
+      }
+    ],
+    "byDate": {
+      "2023-06-12": ["oriki1"],
+      "2023-06-05": ["oriki5"]
+    }
+  },
+  {
+    "userId": "user2",
+    "contributions": [
+      {
+        "id": "oriki3",
+        "title": "Oriki Ṣàngó",
+        "type": "deity",
+        "dateAdded": "2023-05-30",
+        "hasAudio": true,
+        "isSynchronized": {
+          "yoruba": true,
+          "english": true
+        },
+        "status": "approved"
+      }
+    ],
+    "byDate": {
+      "2023-05-30": ["oriki3"]
+    }
+  },
+  {
+    "userId": "user3",
+    "contributions": [
+      {
+        "id": "oriki2",
+        "title": "Oriki Ilé-Ifẹ́",
+        "type": "community",
+        "dateAdded": "2023-04-20",
+        "hasAudio": true,
+        "isSynchronized": {
+          "yoruba": true,
+          "english": true
+        },
+        "status": "approved"
+      },
+      {
+        "id": "oriki4",
+        "title": "Oriki Ọdẹ",
+        "type": "cultural",
+        "dateAdded": "2023-06-05",
+        "hasAudio": false,
+        "isSynchronized": {
+          "yoruba": false,
+          "english": false
+        },
+        "status": "approved"
+      }
+    ],
+    "byDate": {
+      "2023-04-20": ["oriki2"],
+      "2023-06-05": ["oriki4"]
+    }
+  }
+]

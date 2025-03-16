@@ -1,0 +1,44 @@
+[
+  {
+    "id": "user1",
+    "name": "Omolola Ogunbiyi",
+    "state": "Osun",
+    "town": "Ilé-Ifẹ́",
+    "family": "Adéwálé",
+    "profileImage": "https://example.com/profiles/user1.jpg",
+    "preferredLanguage": "yoruba",
+    "stats": {
+      "contributions": 5093,
+      "streams": 200000
+    },
+    "dateJoined": "2023-02-15"
+  },
+  {
+    "id": "user2",
+    "name": "Adebayo Johnson",
+    "state": "Lagos",
+    "town": "Ikeja",
+    "family": "Ogunlana",
+    "profileImage": null,
+    "preferredLanguage": "english",
+    "stats": {
+      "contributions": 42,
+      "streams": 5832
+    },
+    "dateJoined": "2023-05-21"
+  },
+  {
+    "id": "user3",
+    "name": "Folake Adeleke",
+    "state": "Oyo",
+    "town": "Ibadan",
+    "family": "Aladejobi",
+    "profileImage": "https://example.com/profiles/user3.jpg",
+    "preferredLanguage": "yoruba",
+    "stats": {
+      "contributions": 156,
+      "streams": 23451
+    },
+    "dateJoined": "2023-03-08"
+  }
+]

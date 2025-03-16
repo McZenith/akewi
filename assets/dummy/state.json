@@ -1,0 +1,162 @@
+[
+  {
+    "id": "1",
+    "name": "Lagos",
+    "cities": [
+      "Ikeja",
+      "Lagos Island",
+      "Lekki",
+      "Surulere",
+      "Yaba",
+      "Ikorodu",
+      "Badagry",
+      "Epe",
+      "Alimosho",
+      "Ojo"
+    ]
+  },
+  {
+    "id": "2",
+    "name": "Osun",
+    "cities": [
+      "Ilé-Ifẹ́",
+      "Oshogbo",
+      "Ilesa",
+      "Ede",
+      "Iwo",
+      "Ejigbo",
+      "Ikire",
+      "Gbongan",
+      "Ikirun",
+      "Ipetumodu"
+    ]
+  },
+  {
+    "id": "3",
+    "name": "Oyo",
+    "cities": [
+      "Ibadan",
+      "Ogbomosho",
+      "Oyo",
+      "Iseyin",
+      "Kishi",
+      "Igboho",
+      "Eruwa",
+      "Igbo-Ora",
+      "Lalupon",
+      "Saki"
+    ]
+  },
+  {
+    "id": "4",
+    "name": "Ogun",
+    "cities": [
+      "Abeokuta",
+      "Ijebu Ode",
+      "Sagamu",
+      "Ilaro",
+      "Ota",
+      "Ijebu-Igbo",
+      "Iperu",
+      "Ayetoro",
+      "Ago-Iwoye",
+      "Ifo"
+    ]
+  },
+  {
+    "id": "5",
+    "name": "Ondo",
+    "cities": [
+      "Akure",
+      "Ondo",
+      "Owo",
+      "Ikare",
+      "Okitipupa",
+      "Ore",
+      "Idanre",
+      "Iju/Itaogbolu",
+      "Irele",
+      "Igbokoda"
+    ]
+  },
+  {
+    "id": "6",
+    "name": "Ekiti",
+    "cities": [
+      "Ado-Ekiti",
+      "Ikere",
+      "Ise",
+      "Ijero",
+      "Ikole",
+      "Oye",
+      "Efon",
+      "Emure",
+      "Ilawe",
+      "Aramoko"
+    ]
+  },
+  {
+    "id": "7",
+    "name": "Kwara",
+    "cities": [
+      "Ilorin",
+      "Offa",
+      "Omu-Aran",
+      "Jebba",
+      "Patigi",
+      "Lafiagi",
+      "Erin-Ile",
+      "Iloffa",
+      "Ajase-Ipo",
+      "Osi"
+    ]
+  },
+  {
+    "id": "8",
+    "name": "Kogi",
+    "cities": [
+      "Lokoja",
+      "Okene",
+      "Kabba",
+      "Ajaokuta",
+      "Idah",
+      "Ankpa",
+      "Isanlu",
+      "Egbe",
+      "Ogidi",
+      "Dekina"
+    ]
+  },
+  {
+    "id": "9",
+    "name": "Edo",
+    "cities": [
+      "Benin City",
+      "Auchi",
+      "Ekpoma",
+      "Uromi",
+      "Irrua",
+      "Fugar",
+      "Igarra",
+      "Agbor",
+      "Sabongida-Ora",
+      "Ewu"
+    ]
+  },
+  {
+    "id": "10",
+    "name": "Delta",
+    "cities": [
+      "Asaba",
+      "Warri",
+      "Sapele",
+      "Agbor",
+      "Ughelli",
+      "Abraka",
+      "Burutu",
+      "Ogwashi-Uku",
+      "Oleh",
+      "Issele-Uku"
+    ]
+  }
+]

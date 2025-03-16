@@ -1,0 +1,286 @@
+[
+  {
+    "id": "oriki1",
+    "title": "Oriki Idílé Adéwálé",
+    "description": "Family oriki celebrating the lineage of the Adéwálé family",
+    "type": "family",
+    "initialText": "WA",
+    "initialColor": "#C73D10",
+    "hasAudio": true,
+    "audioUrl": "/assets/dummy/audio/oriki1.mp3",
+    "lyricsContent": {
+      "yoruba": "Adéwálé, ọmọ akin.\nỌmọ olúwa ilẹ̀.\nẸni tó dá omi sí ẹnu àkọ́.\nBí ẹyẹ sàn, bí ẹyẹ yọrí.",
+      "english": "Adéwálé, child of the brave.\nOwner of the land.\nThe one who puts water in the mouth of the firstborn.\nLike a bird flies, like a bird raises its head."
+    },
+    "lyricsSections": {
+      "yoruba": [
+        {
+          "text": "Adéwálé, ọmọ akin.",
+          "startTime": 3.5,
+          "endTime": 8.2,
+          "index": 0
+        },
+        {
+          "text": "Ọmọ olúwa ilẹ̀.",
+          "startTime": 8.3,
+          "endTime": 12.1,
+          "index": 1
+        },
+        {
+          "text": "Ẹni tó dá omi sí ẹnu àkọ́.",
+          "startTime": 12.2,
+          "endTime": 17.8,
+          "index": 2
+        },
+        {
+          "text": "Bí ẹyẹ sàn, bí ẹyẹ yọrí.",
+          "startTime": 17.9,
+          "endTime": 22.5,
+          "index": 3
+        }
+      ],
+      "english": [
+        {
+          "text": "Adéwálé, child of the brave.",
+          "startTime": 3.5,
+          "endTime": 8.2,
+          "index": 0
+        },
+        {
+          "text": "Owner of the land.",
+          "startTime": 8.3,
+          "endTime": 12.1,
+          "index": 1
+        },
+        {
+          "text": "The one who puts water in the mouth of the firstborn.",
+          "startTime": 12.2,
+          "endTime": 17.8,
+          "index": 2
+        },
+        {
+          "text": "Like a bird flies, like a bird raises its head.",
+          "startTime": 17.9,
+          "endTime": 22.5,
+          "index": 3
+        }
+      ]
+    },
+    "isSynchronized": {
+      "yoruba": true,
+      "english": true
+    },
+    "metadata": {
+      "duration": 25.8,
+      "language": "yoruba",
+      "region": "Osun",
+      "family": "Adéwálé",
+      "tags": ["family", "heritage", "lineage"],
+      "contributor": {
+        "id": "user1",
+        "name": "Omolola Ogunbiyi"
+      }
+    },
+    "dateAdded": "2023-06-12",
+    "lastModified": "2023-06-15"
+  },
+  {
+    "id": "oriki2",
+    "title": "Oriki Ilé-Ifẹ́",
+    "description": "Regional oriki celebrating the historical city of Ilé-Ifẹ́",
+    "type": "community",
+    "initialText": "IF",
+    "initialColor": "#2A9D8F",
+    "hasAudio": true,
+    "audioUrl": "/assets/dummy/audio/oriki2.mp3",
+    "lyricsContent": {
+      "yoruba": "Ilé-Ifẹ́, ibi ojúmọ́ ti ń mọ́ wá.\nIlẹ̀ tó ní agbára.\nIbi àwọn àgbà gbé ń ṣàṣàrò.\nÌfẹ́ ni a bí mi.",
+      "english": "Ilé-Ifẹ́, where daylight originates.\nLand of power.\nWhere the elders gather to deliberate.\nI was born in Ifẹ́."
+    },
+    "lyricsSections": {
+      "yoruba": [
+        {
+          "text": "Ilé-Ifẹ́, ibi ojúmọ́ ti ń mọ́ wá.",
+          "startTime": 2.1,
+          "endTime": 7.4,
+          "index": 0
+        },
+        {
+          "text": "Ilẹ̀ tó ní agbára.",
+          "startTime": 7.5,
+          "endTime": 11.2,
+          "index": 1
+        },
+        {
+          "text": "Ibi àwọn àgbà gbé ń ṣàṣàrò.",
+          "startTime": 11.3,
+          "endTime": 16.8,
+          "index": 2
+        },
+        {
+          "text": "Ìfẹ́ ni a bí mi.",
+          "startTime": 16.9,
+          "endTime": 20.3,
+          "index": 3
+        }
+      ],
+      "english": [
+        {
+          "text": "Ilé-Ifẹ́, where daylight originates.",
+          "startTime": 2.1,
+          "endTime": 7.4,
+          "index": 0
+        },
+        {
+          "text": "Land of power.",
+          "startTime": 7.5,
+          "endTime": 11.2,
+          "index": 1
+        },
+        {
+          "text": "Where the elders gather to deliberate.",
+          "startTime": 11.3,
+          "endTime": 16.8,
+          "index": 2
+        },
+        {
+          "text": "I was born in Ifẹ́.",
+          "startTime": 16.9,
+          "endTime": 20.3,
+          "index": 3
+        }
+      ]
+    },
+    "isSynchronized": {
+      "yoruba": true,
+      "english": true
+    },
+    "metadata": {
+      "duration": 22.5,
+      "language": "yoruba",
+      "region": "Osun",
+      "family": null,
+      "tags": ["city", "heritage", "royal", "historical"],
+      "contributor": {
+        "id": "user3",
+        "name": "Folake Adeleke"
+      }
+    },
+    "dateAdded": "2023-04-20",
+    "lastModified": "2023-04-22"
+  },
+  {
+    "id": "oriki3",
+    "title": "Oriki Ṣàngó",
+    "description": "Deity oriki honoring Ṣàngó, the deity of thunder and lightning",
+    "type": "deity",
+    "initialText": "SA",
+    "initialColor": "#E76F51",
+    "hasAudio": true,
+    "audioUrl": "/assets/dummy/audio/oriki3.mp3",
+    "lyricsContent": {
+      "yoruba": "Ṣàngó, àrá ọ̀run.\nAláńtákùn, Alápàndẹ́dẹ́.\nKábíyèsí Ọba, Àtàndá Adélósìn.\nA jẹ́ Kò so, à jẹ́ má bò sí ilé.",
+      "english": "Ṣàngó, thunder from heaven.\nThe one who strikes with lightning.\nRoyal Majesty, Àtàndá Adélósìn.\nOne who eats and does not vomit, one who eats and still comes home."
+    },
+    "lyricsSections": {
+      "yoruba": [
+        {
+          "text": "Ṣàngó, àrá ọ̀run.",
+          "startTime": 4.1,
+          "endTime": 8.6,
+          "index": 0
+        },
+        {
+          "text": "Aláńtákùn, Alápàndẹ́dẹ́.",
+          "startTime": 8.7,
+          "endTime": 13.2,
+          "index": 1
+        },
+        {
+          "text": "Kábíyèsí Ọba, Àtàndá Adélósìn.",
+          "startTime": 13.3,
+          "endTime": 19.1,
+          "index": 2
+        },
+        {
+          "text": "A jẹ́ Kò so, à jẹ́ má bò sí ilé.",
+          "startTime": 19.2,
+          "endTime": 26.4,
+          "index": 3
+        }
+      ],
+      "english": [
+        {
+          "text": "Ṣàngó, thunder from heaven.",
+          "startTime": 4.1,
+          "endTime": 8.6,
+          "index": 0
+        },
+        {
+          "text": "The one who strikes with lightning.",
+          "startTime": 8.7,
+          "endTime": 13.2,
+          "index": 1
+        },
+        {
+          "text": "Royal Majesty, Àtàndá Adélósìn.",
+          "startTime": 13.3,
+          "endTime": 19.1,
+          "index": 2
+        },
+        {
+          "text": "One who eats and does not vomit, one who eats and still comes home.",
+          "startTime": 19.2,
+          "endTime": 26.4,
+          "index": 3
+        }
+      ]
+    },
+    "isSynchronized": {
+      "yoruba": true,
+      "english": true
+    },
+    "metadata": {
+      "duration": 28.2,
+      "language": "yoruba",
+      "region": null,
+      "family": null,
+      "tags": ["deity", "spiritual", "traditional", "orisa"],
+      "contributor": {
+        "id": "user2",
+        "name": "Adebayo Johnson"
+      }
+    },
+    "dateAdded": "2023-05-30",
+    "lastModified": "2023-05-30"
+  },
+  {
+    "id": "oriki4",
+    "title": "Oriki Ọdẹ",
+    "description": "Occupational oriki celebrating hunters and their bravery",
+    "type": "cultural",
+    "initialText": "OD",
+    "initialColor": "#264653",
+    "hasAudio": false,
+    "lyricsContent": {
+      "yoruba": "Ọmọ Ọdẹ, akin ogun.\nỌmọ onígbá ọta ṣíṣẹ́.\nṢíṣẹ́ ló ń ṣíṣẹ́ bo ọmọ èèyàn lórí.\nỌmọ onígbá oògùn méjì.",
+      "english": "Child of the Hunter, brave warrior.\nChild of the one with a quiver full of arrows.\nArrows that can pierce through a person's head.\nChild of the one with two medicine gourds."
+    },
+    "isSynchronized": {
+      "yoruba": false,
+      "english": false
+    },
+    "metadata": {
+      "language": "yoruba",
+      "region": null,
+      "family": null,
+      "tags": ["hunters", "occupation", "bravery", "cultural"],
+      "contributor": {
+        "id": "user3",
+        "name": "Folake Adeleke"
+      }
+    },
+    "dateAdded": "2023-06-05",
+    "lastModified": "2023-06-05"
+  }
+]
