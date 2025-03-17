@@ -9,11 +9,8 @@ import {
   Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import Animated, {
-  FadeIn,
-  SlideInUp,
   Easing,
   withTiming,
   useAnimatedStyle,
@@ -29,7 +26,6 @@ import { colors } from '../src/theme/colors';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../src/store/store';
 import { setLanguage } from '../src/store/slices/settingsSlice';
-import i18n from '../src/i18n';
 
 interface Language {
   code: string;

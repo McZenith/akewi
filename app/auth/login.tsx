@@ -14,7 +14,6 @@ import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   FadeIn,
-  FadeInUp,
   withSpring,
   withTiming,
   useAnimatedStyle,
@@ -25,7 +24,6 @@ import { VoicedText } from '../../src/components/base/VoicedText';
 import LanguageSelector from '../../src/components/language/LanguageSelector';
 import Input from '../../src/components/base/Input';
 import SocialButton from '../../src/components/auth/SocialButton';
-import { LOGIN_SCREEN_LAYOUT } from '../../src/constants/screens/auth';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { scale, verticalScale } from '../../src/utils/scaling';
@@ -295,7 +293,7 @@ const LoginScreen = () => {
                 value={identifier}
                 onChangeText={handleIdentifierChange}
                 placeholder={getPlaceholder()}
-                error={error || undefined}
+                error={error ?? undefined}
                 voiceElementId="login-identifier"
                 onSubmitEditing={handleContinue}
                 returnKeyType="go"
