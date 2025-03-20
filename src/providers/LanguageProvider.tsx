@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as LanguageService from '../services/LanguageService';
+import { useAppDispatch, useAppSelector } from '../store';
+import { setLanguage } from '../store/slices/settingsSlice';
 
 export interface LanguageContextType {
   currentLanguage: string;
@@ -30,7 +32,12 @@ export interface LanguageProviderProps {
  */
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const { i18n } = useTranslation();
-  const [currentLanguage, setCurrentLanguage] = useState<string>(i18n.language || 'en');
+  const dispatch = useAppDispatch();
+  const reduxLanguage = useAppSelector(state => state.settings.language);
+
+  const [currentLanguage, setCurrentLanguage] = useState<string>(
+    reduxLanguage || i18n.language || 'en'
+  );
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRTL, setIsRTL] = useState<boolean>(false);
 
@@ -43,9 +50,14 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       setIsLoading(true);
 
       try {
-        // Initialize language from storage or device
-        const language = await LanguageService.initializeLanguage(i18n);
+        // Initialize language from Redux first, then storage or device
+        const language = reduxLanguage || (await LanguageService.initializeLanguage(i18n));
         setCurrentLanguage(language);
+
+        // Ensure Redux state is in sync
+        if (reduxLanguage !== language) {
+          dispatch(setLanguage(language as 'en' | 'yo'));
+        }
 
         // Check if language is RTL
         const langDetails = LanguageService.getLanguageDetails(language);
@@ -58,17 +70,41 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     };
 
     initLanguage();
-  }, [i18n]);
+  }, [i18n, dispatch, reduxLanguage]);
+
+  // Update language state when Redux language changes
+  useEffect(() => {
+    if (reduxLanguage && reduxLanguage !== currentLanguage) {
+      setCurrentLanguage(reduxLanguage);
+
+      // Update RTL state
+      const langDetails = LanguageService.getLanguageDetails(reduxLanguage);
+      setIsRTL(langDetails.rtl || false);
+
+      // Sync i18n
+      i18n.changeLanguage(reduxLanguage).catch(error => {
+        console.error('Failed to change i18n language:', error);
+      });
+    }
+  }, [reduxLanguage, currentLanguage, i18n]);
 
   // Update language state when i18n language changes
   useEffect(() => {
     const handleLanguageChange = () => {
       const newLanguage = i18n.language || 'en';
-      setCurrentLanguage(newLanguage);
 
-      // Update RTL state
-      const langDetails = LanguageService.getLanguageDetails(newLanguage);
-      setIsRTL(langDetails.rtl || false);
+      if (newLanguage !== currentLanguage) {
+        setCurrentLanguage(newLanguage);
+
+        // Update Redux if needed
+        if (newLanguage !== reduxLanguage) {
+          dispatch(setLanguage(newLanguage as 'en' | 'yo'));
+        }
+
+        // Update RTL state
+        const langDetails = LanguageService.getLanguageDetails(newLanguage);
+        setIsRTL(langDetails.rtl || false);
+      }
     };
 
     // Listen for language changes
@@ -78,13 +114,16 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     return () => {
       i18n.off('languageChanged', handleLanguageChange);
     };
-  }, [i18n]);
+  }, [i18n, currentLanguage, reduxLanguage, dispatch]);
 
   // Function to change language
   const changeLanguage = async (languageCode: string): Promise<boolean> => {
     setIsLoading(true);
 
     try {
+      // Update Redux first
+      dispatch(setLanguage(languageCode as 'en' | 'yo'));
+
       // Change language and persist the change
       const success = await LanguageService.changeLanguage(i18n, languageCode);
 

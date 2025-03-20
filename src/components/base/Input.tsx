@@ -9,12 +9,14 @@ import {
   Platform,
   Keyboard,
   TextInputSubmitEditingEventData,
+  Text,
 } from 'react-native';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { scale, verticalScale } from '../../utils/scaling';
 import { useVoiceGuidance } from '../../providers/VoiceGuidanceProvider';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 interface InputProps extends Omit<TextInputProps, 'style'> {
   error?: string;
@@ -40,6 +42,7 @@ const Input: React.FC<InputProps> = ({
   onSubmitEditing,
   ...props
 }) => {
+  const { t } = useTranslation();
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const { isActive, currentElementId, isWaitingForInput, moveToNextElement, readText } =
@@ -80,66 +83,70 @@ const Input: React.FC<InputProps> = ({
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        isFocused && styles.containerFocused,
-        error && styles.containerError,
-        isCurrentElement && styles.containerVoiceActive,
-        containerStyle,
-      ]}
-      accessible={true}
-      accessibilityLabel={label || placeholder}
-      accessibilityState={{
-        disabled: props.editable === false,
-      }}
-      accessibilityRole="none"
-    >
-      {leftIcon && (
-        <View style={styles.leftIcon} accessibilityElementsHidden={true}>
-          {leftIcon}
-        </View>
-      )}
-
-      <TextInput
-        ref={inputRef}
+    <View>
+      <View
         style={[
-          styles.input,
-          leftIcon && styles.inputWithLeftIcon,
-          rightIcon && styles.inputWithRightIcon,
-          inputStyle,
+          styles.container,
+          isFocused && styles.containerFocused,
+          error && styles.containerError,
+          isCurrentElement && styles.containerVoiceActive,
+          containerStyle,
         ]}
-        placeholderTextColor="#ADADAD"
-        placeholder={placeholder}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        onSubmitEditing={handleSubmitEditing}
-        onKeyPress={handleKeyPress}
-        selectionColor={colors.text.primary}
-        accessibilityRole="text"
+        accessible={true}
         accessibilityLabel={label || placeholder}
-        accessibilityHint={placeholder}
-        {...props}
-      />
+        accessibilityState={{
+          disabled: props.editable === false,
+        }}
+        accessibilityRole="none"
+      >
+        {leftIcon && (
+          <View style={styles.leftIcon} accessibilityElementsHidden={true}>
+            {leftIcon}
+          </View>
+        )}
 
-      {rightIcon && (
-        <View style={styles.rightIcon} accessibilityElementsHidden={true}>
-          {rightIcon}
-        </View>
-      )}
+        <TextInput
+          ref={inputRef}
+          style={[
+            styles.input,
+            leftIcon && styles.inputWithLeftIcon,
+            rightIcon && styles.inputWithRightIcon,
+            inputStyle,
+          ]}
+          placeholderTextColor="#ADADAD"
+          placeholder={placeholder}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onSubmitEditing={handleSubmitEditing}
+          onKeyPress={handleKeyPress}
+          selectionColor={colors.text.primary}
+          accessibilityRole="text"
+          accessibilityLabel={label || placeholder}
+          accessibilityHint={placeholder}
+          {...props}
+        />
 
-      {isCurrentElement && (
-        <View style={styles.voiceIcon}>
-          <Ionicons name="mic" size={20} color={colors.voice.background} />
-        </View>
-      )}
+        {rightIcon && (
+          <View style={styles.rightIcon} accessibilityElementsHidden={true}>
+            {rightIcon}
+          </View>
+        )}
+
+        {isCurrentElement && (
+          <View style={styles.voiceIcon}>
+            <Ionicons name="mic" size={20} color={colors.voice.background} />
+          </View>
+        )}
+      </View>
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: scale(342),
+    width: '100%',
+    maxWidth: scale(342),
     height: verticalScale(52),
     flexDirection: 'row',
     alignItems: 'center',
@@ -176,7 +183,22 @@ const styles = StyleSheet.create({
   },
   containerError: {
     borderColor: colors.form.error,
-    backgroundColor: colors.form.backgroundError,
+    borderWidth: 2,
+    backgroundColor: Platform.select({
+      ios: colors.form.backgroundError,
+      android: 'rgba(255, 59, 48, 0.08)',
+    }),
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.form.error,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 0,
+      },
+    }),
   },
   containerVoiceActive: {
     borderColor: colors.voice.background,
@@ -216,6 +238,14 @@ const styles = StyleSheet.create({
     height: scale(20),
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  errorText: {
+    color: colors.form.error,
+    fontSize: typography.sizes.sm,
+    fontFamily: typography.fontFamily.primary,
+    fontWeight: '500',
+    marginTop: verticalScale(4),
+    marginLeft: scale(4),
   },
 });
 

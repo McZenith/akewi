@@ -17,7 +17,13 @@
     "close": "Close",
     "examples": "Examples",
     "play": "Play",
-    "pause": "Pause"
+    "pause": "Pause",
+    "continue": "Continue",
+    "or": "or",
+    "error": "Error",
+    "voice": {
+      "activate": "Activate voice input"
+    }
   },
   "auth": {
     "login": "Log In",
@@ -29,7 +35,43 @@
     "verificationCode": "Verification Code",
     "enterCode": "Enter the code we sent to",
     "resendCode": "Resend Code",
-    "verifyCode": "Verify Code"
+    "verifyCode": "Verify Code",
+    "description": "Browse, listen, and share Oriki that celebrate heritage, lineage, and culture",
+    "input": {
+      "placeholder": {
+        "default": "Enter your email or phone number",
+        "email": "Enter your email address",
+        "phone": "Enter your phone number (e.g., +234 XXX XXX XXXX)"
+      }
+    },
+    "social": {
+      "google": "Continue with Google",
+      "apple": "Continue with Apple"
+    },
+    "errors": {
+      "unexpected": "An unexpected error occurred",
+      "notFound": "No account found with this email or phone number",
+      "invalid": "The email or phone number format is invalid",
+      "googleFailed": "Failed to sign in with Google",
+      "appleFailed": "Failed to sign in with Apple",
+      "emptyInput": "Please enter your email address or phone number",
+      "invalidEmail": "Please enter a valid email address",
+      "invalidPhone": "Please enter a valid phone number (e.g., +234 XXX XXX XXXX)",
+      "invalidInput": "Please enter a valid email address or phone number"
+    }
+  },
+  "userDetails": {
+    "title": "Enter your details",
+    "subtitle": "Add the following to personalize your experience",
+    "description": "Please provide your name, state, town, and optionally your family information to personalize your experience",
+    "name": "Name",
+    "state": "State",
+    "town": "Town",
+    "family": "Family (Optional)",
+    "selectState": "Select your state",
+    "errors": {
+      "saveFailed": "Failed to save user details"
+    }
   },
   "profile": {
     "profile": "Profile",
@@ -122,6 +164,9 @@
     "networkError": "Network error. Check your connection",
     "unknownError": "Unknown error occurred"
   },
+  "validation": {
+    "required": "{{field}} is required"
+  },
   "examples": {
     "localizedContent": "Localized Content",
     "switchLanguage": "Switch language to see the text change",
@@ -140,5 +185,16 @@
     "uganda": "Uganda",
     "algeria": "Algeria",
     "morocco": "Morocco"
+  },
+  "states": {
+    "osun": "Osun",
+    "ondo": "Ondo",
+    "kwara": "Kwara",
+    "kogi": "Kogi",
+    "oyo": "Oyo",
+    "lagos": "Lagos",
+    "ogun": "Ogun",
+    "edo": "Edo",
+    "diaspora": "Diaspora"
   }
 }

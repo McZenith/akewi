@@ -1,0 +1,240 @@
+---
+description: Akewi Project Guidelines for Cursor
+globs: 
+alwaysApply: true
+---
+
+# Akewi Project Development Guidelines
+
+This document provides guidelines for developing the Akewi application using Cursor.
+
+## Project Structure
+
+The Akewi app follows a clean architecture with MVVM pattern:
+
+```
+├── app/                      # Expo Router file-based routing
+│   ├── _layout.tsx           # Root layout
+│   ├── index.tsx             # Entry point
+│   ├── language-modal.tsx    # Language modal screen
+│   ├── language-example.tsx  # Language example screen
+│   ├── auth/                 # Authentication routes
+│   │   ├── _layout.tsx       # Auth layout
+│   │   ├── index.tsx         # Auth entry point
+│   │   └── login.tsx         # Login screen
+│   ├── player/               # Player routes
+│   ├── sync/                 # Sync routes
+│   └── profile/              # Profile routes
+├── src/
+│   ├── components/           # Reusable components
+│   │   ├── base/             # Base UI components
+│   │   ├── auth/             # Authentication components
+│   │   ├── examples/         # Example components
+│   │   ├── form/             # Form components
+│   │   ├── forms/            # Form-related components
+│   │   ├── language/         # Language components
+│   │   ├── layout/           # Layout components
+│   │   ├── media/            # Media-related components
+│   │   ├── modals/           # Modal components
+│   │   ├── oriki/            # Oriki-specific components
+│   │   └── user/             # User-related components
+│   ├── constants/            # App constants
+│   ├── contexts/             # React contexts
+│   ├── hooks/                # Custom React hooks
+│   ├── i18n/                 # Internationalization
+│   ├── providers/            # Context providers
+│   ├── services/             # API and external services
+│   │   ├── LanguageService.ts # Language service
+│   │   ├── api/              # API clients
+│   │   ├── audio/            # Audio services
+│   │   └── storage/          # Local storage services
+│   ├── store/                # Redux state management
+│   ├── theme/                # UI theme
+│   ├── types/                # TypeScript type definitions
+│   └── utils/                # Utility functions
+├── assets/                   # Static assets
+│   ├── fonts/                # Font files
+│   ├── icons/                # Icon assets
+│   ├── images/               # Image assets
+│   ├── sounds/               # Audio files
+│   └── dummy/                # Dummy assets for development
+├── designs/                  # Design assets and files
+├── docs/                     # Documentation
+├── android/                  # Android-specific files
+├── ios/                      # iOS-specific files
+└── node_modules/             # Dependencies
+```
+
+## Routing Guidelines
+
+### Expo Router Usage
+
+- **Always use Expo Router** for all navigation, including modals
+- Use file-based routing in the `app/` directory
+- Use `_layout.tsx` files for defining layouts for route groups
+- Use `index.tsx` for the main screen of a route
+
+### Modal Handling
+
+- Place modal screens directly in the `app/` directory with a descriptive name like `language-modal.tsx`
+- Use Expo Router's modal patterns for displaying modals:
+
+```typescript
+import { router } from 'expo-router';
+
+// Open a modal
+const openLanguageModal = () => {
+  router.push('/language-modal');
+};
+
+// Close a modal
+const closeModal = () => {
+  router.back();
+};
+```
+
+## Coding Standards
+
+- Use TypeScript for type safety
+- Always use arrow functions where possible
+- Use functional components with hooks
+- Follow Redux Toolkit patterns for state management
+- Use Expo Router for navigation
+
+## Component Example
+
+```tsx
+import { View, StyleSheet } from 'react-native';
+import { Text } from '../base/Text';
+import { useTranslation } from '../../hooks/useTranslation';
+import { theme } from '../../constants/theme';
+
+interface ButtonProps {
+  label: string;
+  onPress: () => void;
+  variant?: 'primary' | 'secondary' | 'outline';
+  isDisabled?: boolean;
+}
+
+export const Button = ({ 
+  label, 
+  onPress, 
+  variant = 'primary',
+  isDisabled = false
+}: ButtonProps) => {
+  const { t } = useTranslation();
+  
+  return (
+    <TouchableOpacity
+      onPress={isDisabled ? undefined : onPress}
+      style={[
+        styles.button,
+        styles[variant],
+        isDisabled && styles.disabled
+      ]}
+    >
+      <Text 
+        style={[
+          styles.label,
+          styles[`${variant}Label`]
+        ]}
+      >
+        {t(label)}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  button: {
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primary: {
+    backgroundColor: theme.colors.primary,
+  },
+  secondary: {
+    backgroundColor: theme.colors.secondary,
+  },
+  outline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+  },
+  disabled: {
+    opacity: 0.6,
+  },
+  label: {
+    fontSize: theme.typography.fontSizes.md,
+    fontWeight: theme.typography.fontWeights.semiBold,
+  },
+  primaryLabel: {
+    color: theme.colors.white,
+  },
+  secondaryLabel: {
+    color: theme.colors.white,
+  },
+  outlineLabel: {
+    color: theme.colors.primary,
+  },
+});
+```
+
+## API Integration Pattern
+
+```typescript
+// Use the repository pattern
+export const userRepository = {
+  getUserProfile: async (userId: string): Promise<User> => {
+    try {
+      const response = await apiClient.get(`/users/${userId}`);
+      return mapUserResponseToUser(response);
+    } catch (error) {
+      throw new Error('Failed to fetch user profile');
+    }
+  },
+  
+  updateUserProfile: async (userId: string, data: Partial<User>): Promise<User> => {
+    try {
+      const response = await apiClient.patch(`/users/${userId}`, data);
+      return mapUserResponseToUser(response);
+    } catch (error) {
+      throw new Error('Failed to update user profile');
+    }
+  }
+};
+```
+
+## Animation Guidelines
+
+```typescript
+// Use Reanimated for animations
+import { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
+
+export const FadeInView = ({ children }) => {
+  const opacity = useSharedValue(0);
+  
+  useEffect(() => {
+    opacity.value = withTiming(1, { duration: 300 });
+  }, []);
+  
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+  
+  return <Animated.View style={animatedStyle}>{children}</Animated.View>;
+};
+```
+
+## Documentation
+
+For detailed information, refer to the rule files in the `rules/` directory and documentation in the `docs/` directory.
+
+## Additional Resources
+
+- Expo Documentation: https://docs.expo.dev/
+- React Native Documentation: https://reactnative.dev/docs/
+- Redux Toolkit: https://redux-toolkit.js.org/

@@ -1,76 +1,39 @@
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
+import enTranslations from './translations/english.json';
+import yoTranslations from './translations/yoruba.json';
+import enLocales from './locales/en.json';
+import yoLocales from './locales/yo.json';
 
-// English translations
-const English = {
-  translation: {
-    common: {
-      continue: 'Continue',
-      or: 'or',
-      voice: {
-        activate: 'Activate voice input',
-      },
-    },
-    auth: {
-      description: 'Browse, listen, and share Oriki that celebrate heritage, lineage, and culture',
-      input: {
-        placeholder: {
-          default: 'Enter your email or phone number',
-          email: 'Enter your email address',
-          phone: 'Enter your phone number (e.g., +234 XXX XXX XXXX)',
-        },
-      },
-      social: {
-        google: 'Continue with Google',
-        apple: 'Continue with Apple',
-      },
-    },
-    language: {
-      select: 'Select language',
-      english: 'English',
-      yoruba: 'Yorùbá',
-      change: 'Change language. Current language is {{current}}',
-    },
-  },
+// Helper function to deeply merge two objects
+const deepMerge = (target: any, source: any) => {
+  const result = { ...target };
+
+  for (const key in source) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      if (typeof source[key] === 'object' && source[key] !== null && target[key]) {
+        // If both target and source have an object at this key, merge them
+        result[key] = deepMerge(target[key], source[key]);
+      } else {
+        // Otherwise take the source value
+        result[key] = source[key];
+      }
+    }
+  }
+
+  return result;
 };
 
-// Yoruba translations
-const Yoruba = {
-  translation: {
-    common: {
-      continue: 'Tẹsiwaju',
-      or: 'tabi',
-      voice: {
-        activate: 'Mu ohùn síṣẹ́',
-      },
-    },
-    auth: {
-      description: 'Ṣawari, fetisi, ki o si pin Oriki ti o ṣe ayẹyẹ itan, ẹbi, ati aṣa',
-      input: {
-        placeholder: {
-          default: 'Tẹ imeli rẹ tabi nọmba foonu sii',
-          email: 'Tẹ adirẹsi imeli rẹ sii',
-          phone: 'Tẹ nọmba foonu rẹ sii (fun apẹẹrẹ, +234 XXX XXX XXXX)',
-        },
-      },
-      social: {
-        google: 'Tẹsiwaju pẹlu Google',
-        apple: 'Tẹsiwaju pẹlu Apple',
-      },
-    },
-    language: {
-      select: 'Yan ede',
-      english: 'English',
-      yoruba: 'Yorùbá',
-      change: 'Yi ede pada. Ede lọwọlọwọ jẹ {{current}}',
-    },
-  },
-};
+// Helper function to merge translations and locales
+const mergeResources = (translations: any, locales: any) => ({
+  translation: deepMerge(translations, locales),
+});
 
+// Merge translations with locales for each language
 const resources = {
-  en: English,
-  yo: Yoruba,
+  en: mergeResources(enTranslations, enLocales),
+  yo: mergeResources(yoTranslations, yoLocales),
 };
 
 // Get the device's locale

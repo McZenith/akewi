@@ -16,20 +16,49 @@
     "submit": "Fúnsílẹ̀",
     "close": "Padé",
     "examples": "Àpẹẹrẹ",
-    "play": "Bẹ̀rẹ̀",
-    "pause": "Dúró"
+    "play": "Ṣiṣẹ́",
+    "pause": "Dúró díẹ̀",
+    "continue": "Tẹ̀síwájú",
+    "or": "tàbí",
+    "error": "Aṣiṣe",
+    "voice": {
+      "activate": "Mú ẹ̀rọ ohùn ṣiṣẹ́"
+    }
   },
   "auth": {
     "login": "Wọlé",
     "signup": "Forúkọ sílẹ̀",
     "logout": "Jáde",
+    "description": "Ṣàwárí, gbọ́, kí o sì pín Oríkì tí ó ṣe àyẹyẹ àṣà, ìdílé, àti àṣà",
     "phoneOrEmail": "Fóònù tàbí Ímeèlì",
     "password": "Ọ̀rọ̀ìpamọ́",
     "forgotPassword": "O gbàgbé ọ̀rọ̀ìpamọ́?",
     "verificationCode": "Àmìọ̀rọ̀ ìfidájú",
     "enterCode": "Tẹ kóòdù tí a firánṣẹ́ sí",
     "resendCode": "Firánṣẹ́ kóòdù lẹ́ẹ̀kansí",
-    "verifyCode": "Fi ẹ̀rí músí kóòdù"
+    "verifyCode": "Fi ẹ̀rí músí kóòdù",
+    "input": {
+      "placeholder": {
+        "default": "Tẹ imeli rẹ tabi nọmba foonu sii",
+        "email": "Tẹ adirẹsi imeli rẹ sii",
+        "phone": "Tẹ nọmba foonu rẹ sii (fun apẹẹrẹ, +234 XXX XXX XXXX)"
+      }
+    },
+    "social": {
+      "google": "Tẹsiwaju pẹlu Google",
+      "apple": "Tẹsiwaju pẹlu Apple"
+    },
+    "errors": {
+      "unexpected": "Aṣiṣe ti ko ni ireti kan ti ṣẹlẹ",
+      "notFound": "Ko si akọọlẹ ti a rii pẹlu imeli tabi nọmba foonu yii",
+      "invalid": "Awọn ọna imeli tabi nọmba foonu ko tọ",
+      "googleFailed": "Ikuna lati wọle pẹlu Google",
+      "appleFailed": "Ikuna lati wọle pẹlu Apple",
+      "emptyInput": "Jọwọ tẹ adirẹsi imeli rẹ tabi nọmba foonu sii",
+      "invalidEmail": "Jọwọ tẹ adirẹsi imeli ti o wulo sii",
+      "invalidPhone": "Jọwọ tẹ nọmba foonu ti o wulo sii (fun apẹẹrẹ, +234 XXX XXX XXXX)",
+      "invalidInput": "Jọwọ tẹ adirẹsi imeli to wulo tabi nọmba foonu sii"
+    }
   },
   "profile": {
     "profile": "Púròfáìlì",
@@ -139,5 +168,32 @@
     "uganda": "Yúgándà",
     "algeria": "Àlgéríà",
     "morocco": "Mòrókò"
+  },
+  "userDetails": {
+    "title": "Tẹ àlàyé rẹ sí i",
+    "subtitle": "Fi àwọn wọ̀nyí kun láti ṣe àgbékalẹ̀ ìrírí rẹ",
+    "description": "Jọ̀wọ́ pèsè orúkọ rẹ, ìpínlẹ̀, ìlú, àti ní àṣàyàn àwọn ìwífún ìdílé rẹ láti ṣe àgbékalẹ̀ ìrírí rẹ",
+    "name": "Orúkọ",
+    "state": "Ìpínlẹ̀",
+    "town": "Ìlú",
+    "family": "Ìdílé (Àṣàyàn)",
+    "selectState": "Yan ìpínlẹ̀ rẹ",
+    "errors": {
+      "saveFailed": "Kùnà láti fi àwọn àlàyé aṣàmúlò pamọ́"
+    }
+  },
+  "states": {
+    "osun": "Ọ̀ṣun",
+    "ondo": "Oǹdó",
+    "kwara": "Kwárà",
+    "kogi": "Kògi",
+    "oyo": "Ọ̀yọ́",
+    "lagos": "Èkó",
+    "ogun": "Ògùn",
+    "edo": "Èdó",
+    "diaspora": "Olókeere"
+  },
+  "validation": {
+    "required": "{{field}} jẹ́ dandan"
   }
 }

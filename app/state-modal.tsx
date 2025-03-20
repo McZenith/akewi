@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Platform,
-  Pressable,
-  Dimensions,
-} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Platform, Pressable, Dimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useTranslation } from 'react-i18next';
+import useAppTranslation from '../src/hooks/useAppTranslation';
 import Animated, {
   Easing,
   withTiming,
@@ -22,52 +14,45 @@ import { PanGestureHandler } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { scale, verticalScale } from '../src/utils/scaling';
 import Text from '../src/components/base/Text';
-import ukFlag from '../assets/icons/uk-flag.png';
-import nigeriaFlag from '../assets/icons/nigeria-flag.png';
 import { colors } from '../src/theme/colors';
-import { useAppDispatch, useAppSelector } from '../src/store';
-import { setLanguage } from '../src/store/slices/settingsSlice';
-import useAppTranslation from '../src/hooks/useAppTranslation';
-import { useLanguage } from '../src/providers/LanguageProvider';
+import { typography } from '../src/theme/typography';
+import { useAppDispatch, useAppSelector, RootState } from '../src/store';
+import { updateUserField } from '../src/store/slices/authSlice';
 
-interface Language {
+interface State {
   code: string;
   displayName: string;
-  flag?: any;
 }
-
-const getLanguages = (t: Function): Language[] => [
-  {
-    code: 'en',
-    displayName: t('language.english', 'English'),
-    flag: ukFlag,
-  },
-  {
-    code: 'yo',
-    displayName: t('language.yoruba', 'Yorùbá'),
-    flag: nigeriaFlag,
-  },
-];
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const DRAG_THRESHOLD = 100; // pixels to drag before closing
 
-export default function LanguageModal() {
-  const { t } = useAppTranslation();
-  const { i18n } = useTranslation();
-  const { changeLanguage } = useLanguage();
+export default function StateModal() {
   const router = useRouter();
+  const { t } = useAppTranslation();
   const dispatch = useAppDispatch();
-  const currentLanguage = useAppSelector((state) => state.settings.language);
+  const userDetails = useAppSelector((state: RootState) => state.auth.userDetails);
   const params = useLocalSearchParams();
-  const initialLang = (params.currentLang as string) || currentLanguage || i18n.language || 'en';
 
-  const [selectedLang, setSelectedLang] = useState(initialLang);
+  // Get initial state from Redux or params
+  const initialState = userDetails?.state || (params.currentState as string) || '';
+
+  const [selectedState, setSelectedState] = useState(initialState);
   const translateY = useSharedValue(SCREEN_HEIGHT);
   const opacity = useSharedValue(0);
 
-  // Get languages with translated names
-  const languages = getLanguages(t);
+  // Create state list with translation keys
+  const states: State[] = [
+    { code: 'osun', displayName: t('states.osun', 'Osun') },
+    { code: 'ondo', displayName: t('states.ondo', 'Ondo') },
+    { code: 'kwara', displayName: t('states.kwara', 'Kwara') },
+    { code: 'kogi', displayName: t('states.kogi', 'Kogi') },
+    { code: 'oyo', displayName: t('states.oyo', 'Oyo') },
+    { code: 'lagos', displayName: t('states.lagos', 'Lagos') },
+    { code: 'ogun', displayName: t('states.ogun', 'Ogun') },
+    { code: 'edo', displayName: t('states.edo', 'Edo') },
+    { code: 'diaspora', displayName: t('states.diaspora', 'Diaspora') },
+  ];
 
   // Animate modal in when component mounts
   useEffect(() => {
@@ -85,7 +70,7 @@ export default function LanguageModal() {
         easing: Easing.out(Easing.cubic),
       },
       () => {
-        // Trigger haptic feedback when the modal is fully visible
+        // Trigger haptic feedback AFTER the modal is fully visible
         if (Platform.OS === 'ios') {
           runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
         } else {
@@ -108,7 +93,7 @@ export default function LanguageModal() {
   }));
 
   const closeModal = () => {
-    // Animate backdrop
+    // Animate backdrop out
     opacity.value = withTiming(0, {
       duration: 250,
       easing: Easing.out(Easing.cubic),
@@ -118,7 +103,7 @@ export default function LanguageModal() {
     translateY.value = withTiming(
       SCREEN_HEIGHT,
       {
-        duration: 350,
+        duration: 300,
         easing: Easing.out(Easing.cubic),
       },
       () => {
@@ -152,25 +137,23 @@ export default function LanguageModal() {
     },
   });
 
-  const handleLanguageSelect = async (code: string) => {
+  const handleStateSelect = (code: string, displayName: string) => {
     try {
       // Update local state immediately for UI feedback
-      setSelectedLang(code);
+      setSelectedState(code);
 
-      // Use multiple systems to ensure language change works
-      // 1. Update Redux store
-      dispatch(setLanguage(code as 'en' | 'yo'));
-      
-      // 2. Use the LanguageContext provider
-      await changeLanguage(code);
-      
-      // 3. Force change i18n directly as a fallback
-      await i18n.changeLanguage(code);
+      // Dispatch to Redux to update the state field
+      dispatch(
+        updateUserField({
+          field: 'state',
+          value: displayName,
+        })
+      );
 
-      // Close modal with animation after all changes applied
-      setTimeout(() => closeModal(), 100);
+      // Close modal with animation
+      closeModal();
     } catch (error) {
-      console.error('Error changing language:', error);
+      console.error('Error selecting state:', error);
     }
   };
 
@@ -187,33 +170,32 @@ export default function LanguageModal() {
     <View style={styles.container}>
       {/* Backdrop with press to dismiss */}
       <Animated.View style={[styles.backdrop, backdropStyle]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={closeModal} />
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => closeModal()} />
       </Animated.View>
 
       {/* Modal content */}
       <PanGestureHandler onGestureEvent={gestureHandler}>
         <Animated.View style={[styles.contentContainer, modalStyle]}>
           <View style={styles.handle} />
-          <Text style={styles.title}>{t('language.select', 'Select language')}</Text>
+          <Text style={styles.title}>{t('userDetails.selectState', 'Select your state')}</Text>
 
-          {languages.map((language, index) => (
-            <React.Fragment key={language.code}>
+          {states.map((state, index) => (
+            <React.Fragment key={state.code}>
               <TouchableOpacity
-                style={styles.languageOption}
-                onPress={() => handleLanguageSelect(language.code)}
+                style={styles.stateOption}
+                onPress={() => handleStateSelect(state.code, state.displayName)}
                 activeOpacity={0.7}
-                accessibilityLabel={language.displayName}
+                accessibilityLabel={state.displayName}
                 accessibilityRole="button"
               >
-                <View style={styles.languageContent}>
-                  <Image source={language.flag} style={styles.flagIcon} resizeMode="contain" />
-                  <Text style={styles.languageName}>{language.displayName}</Text>
+                <View style={styles.stateContent}>
+                  <Text style={styles.stateName}>{state.displayName}</Text>
                 </View>
 
-                {/* Use custom selection indicator instead of Ionicons */}
-                <SelectionIndicator isSelected={selectedLang === language.code} />
+                {/* Use custom selection indicator */}
+                <SelectionIndicator isSelected={selectedState === state.code} />
               </TouchableOpacity>
-              {index < languages.length - 1 && <View style={styles.divider} />}
+              {index < states.length - 1 && <View style={styles.divider} />}
             </React.Fragment>
           ))}
         </Animated.View>
@@ -233,12 +215,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   contentContainer: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.white,
     borderTopLeftRadius: scale(24),
     borderTopRightRadius: scale(24),
     paddingHorizontal: scale(16),
     paddingTop: scale(12),
     paddingBottom: Platform.OS === 'ios' ? scale(34) : scale(24),
+    // Add max height to ensure it doesn't take up too much space
+    maxHeight: SCREEN_HEIGHT * 0.8,
     ...Platform.select({
       android: {
         elevation: 24,
@@ -269,24 +253,18 @@ const styles = StyleSheet.create({
     marginBottom: scale(16),
     textAlign: 'center',
   },
-  languageOption: {
+  stateOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: scale(16),
     paddingHorizontal: scale(8),
   },
-  languageContent: {
+  stateContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(12),
   },
-  flagIcon: {
-    width: scale(24),
-    height: scale(24),
-    borderRadius: scale(12),
-  },
-  languageName: {
+  stateName: {
     fontSize: scale(16),
     fontWeight: '500',
     color: colors.text.primary,
@@ -296,7 +274,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8E8E8',
     width: '100%',
   },
-  // Custom selection indicator styles
   selectionIndicator: {
     width: scale(24),
     height: scale(24),

@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 
 // Types
 export type LoginIdentifierType = 'email' | 'phone' | null;
@@ -20,6 +20,12 @@ export interface UserDetails {
   state: string;
   town: string;
   family?: string;
+}
+
+// For updating single field
+export interface UserFieldUpdate {
+  field: keyof UserDetails;
+  value: string;
 }
 
 interface AuthState {
@@ -61,6 +67,43 @@ const initialState: AuthState = {
   // User details state
   userDetails: null,
 };
+
+// Async actions
+export const loginStart = createAsyncThunk(
+  'auth/loginStart',
+  async (
+    {
+      identifier,
+      type,
+      provider,
+    }: {
+      identifier?: string;
+      type?: 'email' | 'phone' | null;
+      provider?: 'google' | 'apple';
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      // TODO: Implement actual API call
+      // Mock API call for now
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      if (provider) {
+        return {
+          id: '123',
+          email: 'user@example.com',
+        };
+      }
+
+      return {
+        id: '123',
+        [type === 'email' ? 'email' : 'phone']: identifier,
+      };
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Login failed');
+    }
+  }
+);
 
 const authSlice = createSlice({
   name: 'auth',
@@ -104,6 +147,27 @@ const authSlice = createSlice({
       }
     },
 
+    // Update single user field
+    updateUserField: (state, action: PayloadAction<UserFieldUpdate>) => {
+      const { field, value } = action.payload;
+      if (state.userDetails) {
+        state.userDetails = { ...state.userDetails, [field]: value };
+      } else {
+        // Initialize userDetails object if it doesn't exist yet
+        state.userDetails = {
+          name: field === 'name' ? value : '',
+          state: field === 'state' ? value : '',
+          town: field === 'town' ? value : '',
+          family: field === 'family' ? value : '',
+        };
+      }
+
+      // Also update the user object if it exists
+      if (state.user) {
+        state.user = { ...state.user, [field]: value };
+      }
+    },
+
     // Loading state
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -117,9 +181,7 @@ const authSlice = createSlice({
     },
 
     // Logout
-    logout: state => {
-      return { ...initialState };
-    },
+    logout: state => ({ ...initialState }),
 
     // Clear specific states
     clearError: state => {
@@ -131,6 +193,22 @@ const authSlice = createSlice({
       state.verificationMethod = null;
     },
   },
+  extraReducers: builder => {
+    builder
+      .addCase(loginStart.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginStart.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload as User;
+      })
+      .addCase(loginStart.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  },
 });
 
 // Export actions
@@ -139,6 +217,7 @@ export const {
   startVerification,
   setAuthenticated,
   setUserDetails,
+  updateUserField,
   setLoading,
   setError,
   logout,
@@ -147,6 +226,9 @@ export const {
 } = authSlice.actions;
 
 // Export reducer
+export const authReducer = authSlice.reducer;
+
+// Also export the slice as default
 export default authSlice.reducer;
 
 // Selectors

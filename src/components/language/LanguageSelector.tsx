@@ -1,40 +1,75 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { scale, verticalScale } from '../../utils/scaling';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { scale } from '../../utils/scaling';
 import Text from '../base/Text';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
+import { useAppSelector, useAppDispatch } from '../../store';
+import { setLanguage } from '../../store/slices/settingsSlice';
+import useAppTranslation from '../../hooks/useAppTranslation';
 
 interface LanguageSelectorProps {
-  currentLanguage: string;
+  currentLanguage?: string;
   style?: any;
+  onPress?: () => void;
+  onSelect?: (language: string) => void;
 }
 
-const getLanguageDisplayName = (code: string): string => {
+// Helper function to get the display name for a language code
+const getLanguageDisplayName = (code: string, t: Function): string => {
   switch (code) {
     case 'en':
-      return 'English';
+      return t('language.english', 'English');
     case 'yo':
-      return 'Yoruba';
+      return t('language.yoruba', 'Yorùbá');
     default:
       return code;
   }
 };
 
-const LanguageSelector: React.FC<LanguageSelectorProps> = ({ currentLanguage, style }) => {
-  const { t, i18n } = useTranslation();
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({
+  currentLanguage,
+  style,
+  onPress,
+  onSelect,
+}) => {
+  const { t } = useAppTranslation();
+  const { i18n } = useTranslation();
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  // Get language from Redux store
+  const reduxLanguage = useAppSelector(state => state.settings?.language);
+
+  // Effect to sync local state with Redux state
+  useEffect(() => {
+    // Update Redux if there's a mismatch with i18n
+    if (reduxLanguage !== i18n.language && i18n.language) {
+      dispatch(setLanguage(i18n.language as 'en' | 'yo'));
+    }
+  }, [i18n.language, reduxLanguage, dispatch]);
 
   const handlePress = () => {
-    router.push('/language-modal');
+    if (onPress) {
+      onPress();
+    } else {
+      router.push('/language-modal');
+    }
   };
 
-  // Use the current i18n language if the prop is not provided
-  const languageCode = currentLanguage || i18n.language || 'en';
-  const displayName = getLanguageDisplayName(languageCode);
+  const handleSelect = (language: string) => {
+    if (onSelect) {
+      onSelect(language);
+    }
+    dispatch(setLanguage(language as 'en' | 'yo'));
+  };
+
+  // Use Redux language state for consistency, fallback to props or i18n
+  const languageCode = currentLanguage || reduxLanguage || i18n.language || 'en';
+  const displayName = getLanguageDisplayName(languageCode, t);
 
   return (
     <TouchableOpacity
@@ -42,9 +77,11 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ currentLanguage, st
       onPress={handlePress}
       activeOpacity={0.7}
       accessibilityRole="button"
-      accessibilityLabel={`Change language from ${displayName}`}
+      accessibilityLabel={t('language.change', 'Change language. Current language is {{current}}', {
+        current: displayName,
+      })}
     >
-      <Ionicons name="globe-outline" size={scale(20)} color={colors.text.primary} />
+      <Ionicons name="globe-outline" size={scale(16)} color={colors.text.primary} />
       <Text style={styles.text}>{displayName}</Text>
     </TouchableOpacity>
   );
@@ -55,24 +92,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ECECEC',
+    borderRadius: scale(100),
     paddingHorizontal: scale(12),
-    paddingVertical: scale(8),
-    borderRadius: scale(128),
-    gap: scale(4),
-    shadowColor: colors.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingVertical: verticalScale(6),
+    marginLeft: scale(8),
   },
   text: {
-    color: colors.text.primary,
-    fontFamily: typography.fontFamily.primary,
     fontSize: typography.sizes.sm,
+    fontFamily: typography.fontFamily.primary,
     fontWeight: typography.weights.medium,
+    color: colors.text.primary,
+    marginLeft: scale(4),
   },
 });
 

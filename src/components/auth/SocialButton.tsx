@@ -4,7 +4,7 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { scale, verticalScale } from '../../utils/scaling';
 import Text from '../base/Text';
-import { useTranslation } from 'react-i18next';
+import useAppTranslation from '../../hooks/useAppTranslation';
 import { useVoiceGuidance } from '../../providers/VoiceGuidanceProvider';
 import googleIcon from '../../../assets/icons/google.png';
 import appleIcon from '../../../assets/icons/apple.png';
@@ -24,7 +24,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({
   disabled,
   voiceElementId,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useAppTranslation();
   const { isActive, currentElementId, readText } = useVoiceGuidance();
   const isGoogle = provider === 'google';
   const isCurrentElement = voiceElementId && voiceElementId === currentElementId;
@@ -64,7 +64,8 @@ const SocialButton: React.FC<SocialButtonProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: scale(342),
+    width: '100%',
+    maxWidth: scale(342),
     height: verticalScale(56),
     flexDirection: 'row',
     alignItems: 'center',
