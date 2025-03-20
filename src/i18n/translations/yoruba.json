@@ -195,5 +195,10 @@
   },
   "validation": {
     "required": "{{field}} jẹ́ dandan"
+  },
+  "language": {
+    "english": "Gẹ̀ẹ́sì",
+    "yoruba": "Yorùbá",
+    "change": "Yí èdè padà. Èdè lọ́wọ́lọ́wọ́ ni {{current}}"
   }
 }

@@ -196,5 +196,10 @@
     "ogun": "Ogun",
     "edo": "Edo",
     "diaspora": "Diaspora"
+  },
+  "language": {
+    "english": "English",
+    "yoruba": "Yorùbá",
+    "change": "Change language. Current language is {{current}}"
   }
 }
