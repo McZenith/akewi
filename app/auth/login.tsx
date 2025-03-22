@@ -44,6 +44,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { setLanguage } from '../../src/store/slices/settingsSlice';
 import useAppTranslation from '../../src/hooks/useAppTranslation';
 import Divider from '../../src/components/base/Divider';
+import { useLanguage } from '../../src/providers/LanguageProvider';
+import { Ionicons } from '@expo/vector-icons';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
@@ -55,25 +57,39 @@ interface SocialButtonProps {
   voiceElementId: string;
 }
 
-const LoginScreen = () => {
+const LoginScreen: React.FC = () => {
   const dispatch = useAppDispatch();
   const { t } = useAppTranslation();
   const router = useRouter();
   const [identifier, setIdentifier] = useState('');
   const [identifierType, setIdentifierType] = useState<'email' | 'phone' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
   const selectedLanguage = useAppSelector((state: RootState) => state.settings.language);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const { startVoiceGuidance, stopVoiceGuidance, readText, isActive, currentElementId } =
     useVoiceGuidance();
+  const { currentLanguage } = useLanguage();
 
   const scrollViewRef = useRef(null);
   const buttonScale = useSharedValue(1);
   const screenHeight = Dimensions.get('window').height;
 
   const insets = useSafeAreaInsets();
+
+  // Define form container style with insets inside the component
+  const formContainerStyle = {
+    ...styles.formContainer,
+    marginTop: Platform.select({
+      ios:
+        Dimensions.get('window').height > 700
+          ? verticalScale(170) - insets.top
+          : verticalScale(150) - insets.top,
+      android: verticalScale(220) - insets.top,
+    }),
+  };
 
   useEffect(() => {
     if (i18next.language && i18next.language !== selectedLanguage) {
@@ -95,6 +111,12 @@ const LoginScreen = () => {
       keyboardDidHideListener.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (errorKey) {
+      setError(t(errorKey as any));
+    }
+  }, [currentLanguage, i18next.language, t, errorKey]);
 
   const handlePressIn = () => {
     buttonScale.value = withTiming(0.95, {
@@ -123,7 +145,6 @@ const LoginScreen = () => {
       stopVoiceGuidance();
     } else {
       startVoiceGuidance();
-      // Set a slight delay to ensure the voice guidance context is ready
       setTimeout(() => {
         readText(
           t(
@@ -146,20 +167,16 @@ const LoginScreen = () => {
   const handleIdentifierChange = (text: string) => {
     setIdentifier(text);
     setError('');
+    setErrorKey(null);
 
-    // Don't change identifier type while typing - we'll determine it on submission
-
-    // If voice guidance is active, read the input placeholder
     if (isActive && currentElementId === 'login-identifier') {
       readText(getPlaceholder());
     }
   };
 
   const handleContinue = async () => {
-    // Trim the identifier to remove any whitespace
     const trimmedIdentifier = identifier.trim();
 
-    // Determine the identifier type at submission time
     let submissionType = identifierType;
     if (!submissionType) {
       if (trimmedIdentifier.includes('@')) {
@@ -169,11 +186,12 @@ const LoginScreen = () => {
       }
     }
 
-    // Validate the input with the determined type
     const validationError = validateIdentifier(trimmedIdentifier, submissionType);
     if (validationError) {
-      setError(validationError);
-      readText(validationError);
+      const errorKey = getErrorKeyForValidationError(validationError);
+      setErrorKey(errorKey);
+      setError(t(errorKey as any));
+      readText(t(errorKey as any));
       return;
     }
 
@@ -186,31 +204,26 @@ const LoginScreen = () => {
         })
       ).unwrap();
 
-      // Navigation to user details screen after successful login
       router.push('/auth/user-details');
     } catch (err) {
-      let errorMessage: string = t('auth.errors.unexpected', 'An unexpected error occurred');
+      let errorKey = 'auth.errors.unexpected';
+
       if (err instanceof Error) {
-        // Handle specific error cases
         if (err.message.includes('not found')) {
-          errorMessage = t(
-            'auth.errors.notFound',
-            'No account found with this email or phone number'
-          );
+          errorKey = 'auth.errors.notFound';
         } else if (err.message.includes('invalid')) {
-          errorMessage = t('auth.errors.invalid', 'The email or phone number format is invalid');
-        } else {
-          errorMessage = err.message;
+          errorKey = 'auth.errors.invalid';
         }
       }
-      setError(errorMessage);
-      readText(errorMessage);
+
+      setErrorKey(errorKey);
+      setError(t(errorKey as any));
+      readText(t(errorKey as any));
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Add input placeholder that doesn't change based on input type
   const getPlaceholder = () => {
     return t('auth.input.placeholder.default', 'Enter your email or phone number');
   };
@@ -219,7 +232,6 @@ const LoginScreen = () => {
     try {
       setIsSocialLoading('google');
       await dispatch(loginStart({ provider: 'google' })).unwrap();
-      // Navigation will be handled by the auth state listener
     } catch (err) {
       const errorMessage =
         err instanceof Error
@@ -236,7 +248,6 @@ const LoginScreen = () => {
     try {
       setIsSocialLoading('apple');
       await dispatch(loginStart({ provider: 'apple' })).unwrap();
-      // Navigation will be handled by the auth state listener
     } catch (err) {
       const errorMessage =
         err instanceof Error
@@ -249,7 +260,6 @@ const LoginScreen = () => {
     }
   };
 
-  // Social buttons
   const renderSocialButtons = () => (
     <>
       <SocialButton
@@ -266,6 +276,17 @@ const LoginScreen = () => {
       />
     </>
   );
+
+  const getErrorKeyForValidationError = (errorMessage: string): string => {
+    if (errorMessage.includes('valid email')) {
+      return 'auth.errors.invalidEmail';
+    } else if (errorMessage.includes('valid phone')) {
+      return 'auth.errors.invalidPhone';
+    } else if (errorMessage.includes('required')) {
+      return 'auth.errors.required';
+    }
+    return 'auth.errors.invalid';
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -294,15 +315,7 @@ const LoginScreen = () => {
               Platform.OS === 'ios' ? colors.gradient.middle : 'rgba(255, 255, 255, 0.8)',
               Platform.OS === 'ios' ? colors.gradient.end : 'rgba(255, 255, 255, 1.0)',
             ]}
-            style={[
-              styles.formContainer,
-              {
-                marginTop:
-                  Platform.OS === 'ios'
-                    ? verticalScale(220) - insets.top
-                    : verticalScale(220) - insets.top,
-              },
-            ]}
+            style={formContainerStyle}
             pointerEvents="box-none"
           >
             <View
@@ -348,21 +361,29 @@ const LoginScreen = () => {
                     </VoicedText>
                   </View>
 
-                  <Input
-                    value={identifier}
-                    onChangeText={handleIdentifierChange}
-                    placeholder={getPlaceholder()}
-                    error={error ?? undefined}
-                    voiceElementId="login-identifier"
-                    onSubmitEditing={handleContinue}
-                    returnKeyType="go"
-                    keyboardType="default"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    inputStyle={
-                      selectedLanguage === 'yo' ? { fontSize: typography.sizes.md } : undefined
-                    }
-                  />
+                  <View style={styles.inputContainer}>
+                    <Input
+                      placeholder={getPlaceholder()}
+                      value={identifier}
+                      onChangeText={handleIdentifierChange}
+                      leftIcon={<Ionicons name="person-outline" size={20} color="#666" />}
+                      voiceElementId="login-identifier"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      keyboardType={
+                        identifierType === 'email'
+                          ? 'email-address'
+                          : identifierType === 'phone'
+                            ? 'phone-pad'
+                            : 'email-address'
+                      }
+                      error={errorKey ? undefined : error}
+                      errorTranslationKey={errorKey}
+                      inputStyle={
+                        selectedLanguage === 'yo' ? { fontSize: typography.sizes.md } : undefined
+                      }
+                    />
+                  </View>
 
                   <AnimatedTouchableOpacity
                     style={[styles.continueButton, buttonAnimatedStyle]}
@@ -471,6 +492,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(24),
     lineHeight: typography.sizes.lg * 1.4,
   },
+  inputContainer: {
+    width: '100%',
+    minHeight: Platform.OS === 'ios' ? verticalScale(70) : undefined,
+    marginBottom: Platform.OS === 'ios' ? verticalScale(8) : 0,
+  },
   continueButton: {
     backgroundColor: colors.button.primary,
     borderRadius: scale(100),
@@ -478,7 +504,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: scale(342),
     alignItems: 'center',
-    marginTop: verticalScale(24),
+    marginTop: verticalScale(16),
   },
   continueButtonText: {
     fontSize: typography.sizes.button,

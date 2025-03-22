@@ -12,7 +12,7 @@ export default function LanguageExampleScreen() {
     <SafeAreaView edges={['top']} style={{ flex: 1 }}>
       <Stack.Screen
         options={{
-          title: t('settings.language'),
+          title: t('settings.language' as any),
           headerShown: true,
         }}
       />

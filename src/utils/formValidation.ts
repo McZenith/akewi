@@ -3,22 +3,23 @@
  * A collection of validation functions for form fields
  */
 
-export type ValidationResult = string | null | undefined;
+export type ValidationResult = { message?: string; key?: string } | null | undefined;
 
 /**
  * Required field validation
- * @param message - Custom error message (optional)
+ * @param messageOrKey - Custom error message or translation key (optional)
+ * @param isTranslationKey - Whether the message is a translation key
  * @returns Validation function
  */
 export const required =
-  (message = 'This field is required') =>
+  (messageOrKey = 'This field is required', isTranslationKey = false) =>
   (value: any): ValidationResult => {
     if (value === null || value === undefined || value === '') {
-      return message;
+      return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
     }
 
     if (typeof value === 'string' && value.trim() === '') {
-      return message;
+      return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
     }
 
     return null;
@@ -27,14 +28,19 @@ export const required =
 /**
  * Minimum length validation
  * @param minLength - Minimum length required
- * @param message - Custom error message (optional)
+ * @param messageOrKey - Custom error message or translation key (optional)
+ * @param isTranslationKey - Whether the message is a translation key
  * @returns Validation function
  */
 export const minLength =
-  (minLength: number, message?: string) =>
+  (minLength: number, messageOrKey?: string, isTranslationKey = false) =>
   (value: string): ValidationResult => {
     if (!value || value.length < minLength) {
-      return message || `Must be at least ${minLength} characters`;
+      const defaultMessage = `Must be at least ${minLength} characters`;
+      if (messageOrKey) {
+        return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
+      }
+      return { message: defaultMessage };
     }
     return null;
   };
@@ -42,32 +48,38 @@ export const minLength =
 /**
  * Maximum length validation
  * @param maxLength - Maximum length allowed
- * @param message - Custom error message (optional)
+ * @param messageOrKey - Custom error message or translation key (optional)
+ * @param isTranslationKey - Whether the message is a translation key
  * @returns Validation function
  */
 export const maxLength =
-  (maxLength: number, message?: string) =>
+  (maxLength: number, messageOrKey?: string, isTranslationKey = false) =>
   (value: string): ValidationResult => {
     if (value && value.length > maxLength) {
-      return message || `Must be no more than ${maxLength} characters`;
+      const defaultMessage = `Must be no more than ${maxLength} characters`;
+      if (messageOrKey) {
+        return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
+      }
+      return { message: defaultMessage };
     }
     return null;
   };
 
 /**
  * Email format validation
- * @param message - Custom error message (optional)
+ * @param messageOrKey - Custom error message or translation key (optional)
+ * @param isTranslationKey - Whether the message is a translation key
  * @returns Error message if validation fails, null otherwise
  */
 export const email =
-  (message = 'Please enter a valid email address') =>
+  (messageOrKey = 'Please enter a valid email address', isTranslationKey = false) =>
   (value: string): ValidationResult => {
     if (!value) return null;
 
     // Basic email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
-      return message;
+      return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
     }
 
     return null;
@@ -75,18 +87,19 @@ export const email =
 
 /**
  * Phone number validation
- * @param message - Custom error message (optional)
+ * @param messageOrKey - Custom error message or translation key (optional)
+ * @param isTranslationKey - Whether the message is a translation key
  * @returns Error message if validation fails, null otherwise
  */
 export const phoneNumber =
-  (message = 'Please enter a valid phone number') =>
+  (messageOrKey = 'Please enter a valid phone number', isTranslationKey = false) =>
   (value: string): ValidationResult => {
     if (!value) return null;
 
     // Basic phone number validation - allows various formats
     const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
     if (!phoneRegex.test(value.replace(/\s/g, ''))) {
-      return message;
+      return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
     }
 
     return null;
@@ -94,11 +107,12 @@ export const phoneNumber =
 
 /**
  * URL validation
- * @param message - Custom error message (optional)
+ * @param messageOrKey - Custom error message or translation key (optional)
+ * @param isTranslationKey - Whether the message is a translation key
  * @returns Error message if validation fails, null otherwise
  */
 export const url =
-  (message = 'Please enter a valid URL') =>
+  (messageOrKey = 'Please enter a valid URL', isTranslationKey = false) =>
   (value: string): ValidationResult => {
     if (!value) return null;
 
@@ -106,22 +120,23 @@ export const url =
       new URL(value);
       return null;
     } catch {
-      return message;
+      return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
     }
   };
 
 /**
  * Number validation
- * @param message - Custom error message (optional)
+ * @param messageOrKey - Custom error message or translation key (optional)
+ * @param isTranslationKey - Whether the message is a translation key
  * @returns Error message if validation fails, null otherwise
  */
 export const number =
-  (message = 'Please enter a valid number') =>
+  (messageOrKey = 'Please enter a valid number', isTranslationKey = false) =>
   (value: string): ValidationResult => {
     if (!value) return null;
 
     if (isNaN(Number(value))) {
-      return message;
+      return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
     }
 
     return null;
@@ -130,11 +145,12 @@ export const number =
 /**
  * Minimum value validation for numbers
  * @param min - Minimum value allowed
- * @param message - Custom error message (optional)
+ * @param messageOrKey - Custom error message or translation key (optional)
+ * @param isTranslationKey - Whether the message is a translation key
  * @returns Validation function
  */
 export const min =
-  (min: number, message?: string) =>
+  (min: number, messageOrKey?: string, isTranslationKey = false) =>
   (value: string | number): ValidationResult => {
     if (!value) return null;
 
@@ -143,7 +159,11 @@ export const min =
     if (isNaN(numberValue)) return null;
 
     if (numberValue < min) {
-      return message || `Must be at least ${min}`;
+      const defaultMessage = `Must be at least ${min}`;
+      if (messageOrKey) {
+        return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
+      }
+      return { message: defaultMessage };
     }
 
     return null;
@@ -152,11 +172,12 @@ export const min =
 /**
  * Maximum value validation for numbers
  * @param max - Maximum value allowed
- * @param message - Custom error message (optional)
+ * @param messageOrKey - Custom error message or translation key (optional)
+ * @param isTranslationKey - Whether the message is a translation key
  * @returns Validation function
  */
 export const max =
-  (max: number, message?: string) =>
+  (max: number, messageOrKey?: string, isTranslationKey = false) =>
   (value: string | number): ValidationResult => {
     if (!value) return null;
 
@@ -165,7 +186,11 @@ export const max =
     if (isNaN(numberValue)) return null;
 
     if (numberValue > max) {
-      return message || `Must be no more than ${max}`;
+      const defaultMessage = `Must be no more than ${max}`;
+      if (messageOrKey) {
+        return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
+      }
+      return { message: defaultMessage };
     }
 
     return null;
@@ -174,14 +199,15 @@ export const max =
 /**
  * Match validation - checks if value matches another value
  * @param compareValue - Value to compare against
- * @param message - Custom error message (optional)
+ * @param messageOrKey - Custom error message or translation key (optional)
+ * @param isTranslationKey - Whether the message is a translation key
  * @returns Validation function
  */
 export const matches =
-  (compareValue: any, message = 'Values do not match') =>
+  (compareValue: any, messageOrKey = 'Values do not match', isTranslationKey = false) =>
   (value: any): ValidationResult => {
     if (value !== compareValue) {
-      return message;
+      return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
     }
 
     return null;
@@ -190,16 +216,17 @@ export const matches =
 /**
  * Pattern validation with regular expression
  * @param pattern - Regular expression pattern
- * @param message - Custom error message
+ * @param messageOrKey - Custom error message or translation key
+ * @param isTranslationKey - Whether the message is a translation key
  * @returns Validation function
  */
 export const pattern =
-  (pattern: RegExp, message: string) =>
+  (pattern: RegExp, messageOrKey: string, isTranslationKey = false) =>
   (value: string): ValidationResult => {
     if (!value) return null;
 
     if (!pattern.test(value)) {
-      return message;
+      return isTranslationKey ? { key: messageOrKey } : { message: messageOrKey };
     }
 
     return null;
@@ -244,8 +271,8 @@ export const custom =
 export const validateForm = <T extends Record<string, any>>(
   values: T,
   validationSchema: Record<keyof T, (value: any) => ValidationResult>
-): Partial<Record<keyof T, string>> => {
-  const errors: Partial<Record<keyof T, string>> = {};
+): Partial<Record<keyof T, { message?: string; key?: string }>> => {
+  const errors: Partial<Record<keyof T, { message?: string; key?: string }>> = {};
 
   Object.keys(validationSchema).forEach(key => {
     const error = validationSchema[key as keyof T](values[key as keyof T]);

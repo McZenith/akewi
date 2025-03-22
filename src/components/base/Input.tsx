@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   TextInput,
@@ -9,7 +9,6 @@ import {
   Platform,
   Keyboard,
   TextInputSubmitEditingEventData,
-  Text,
 } from 'react-native';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -17,19 +16,24 @@ import { scale, verticalScale } from '../../utils/scaling';
 import { useVoiceGuidance } from '../../providers/VoiceGuidanceProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import Text from './Text';
+import { useLanguage } from '../../providers/LanguageProvider';
 
 interface InputProps extends Omit<TextInputProps, 'style'> {
   error?: string;
+  errorTranslationKey?: string;
   inputStyle?: any;
   containerStyle?: any;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   label?: string;
   voiceElementId?: string;
+  fullWidth?: boolean;
 }
 
 const Input: React.FC<InputProps> = ({
   error,
+  errorTranslationKey,
   inputStyle,
   containerStyle,
   leftIcon,
@@ -40,9 +44,11 @@ const Input: React.FC<InputProps> = ({
   placeholder,
   voiceElementId,
   onSubmitEditing,
+  fullWidth = false,
   ...props
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const { isActive, currentElementId, isWaitingForInput, moveToNextElement, readText } =
@@ -82,13 +88,25 @@ const Input: React.FC<InputProps> = ({
     }
   };
 
+  // Use memoized error message that updates when language changes
+  const errorMessage = useMemo(() => {
+    return errorTranslationKey ? t(errorTranslationKey as any) : error;
+  }, [error, errorTranslationKey, t, currentLanguage, i18n.language]);
+
+  // Force component to update when language changes
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    forceUpdate(prev => prev + 1);
+  }, [currentLanguage, i18n.language]);
+
   return (
-    <View>
+    <View style={fullWidth ? { width: '100%' } : undefined}>
       <View
         style={[
           styles.container,
+          fullWidth && styles.fullWidth,
           isFocused && styles.containerFocused,
-          error && styles.containerError,
+          errorMessage && styles.containerError,
           isCurrentElement && styles.containerVoiceActive,
           containerStyle,
         ]}
@@ -138,7 +156,14 @@ const Input: React.FC<InputProps> = ({
           </View>
         )}
       </View>
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {errorMessage && (
+        <Text
+          style={styles.errorText}
+          key={`error-${currentLanguage}`} // Force re-render when language changes
+        >
+          {errorMessage}
+        </Text>
+      )}
     </View>
   );
 };
@@ -166,6 +191,9 @@ const styles = StyleSheet.create({
         elevation: 1,
       },
     }),
+  },
+  fullWidth: {
+    maxWidth: '100%',
   },
   containerFocused: {
     borderColor: colors.text.primary,
@@ -246,6 +274,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginTop: verticalScale(4),
     marginLeft: scale(4),
+    ...Platform.select({
+      ios: {
+        fontSize: typography.sizes.xs,
+        lineHeight: typography.sizes.xs * 1.2,
+        marginTop: verticalScale(2),
+        maxWidth: '95%', // Prevent long text from wrapping too much
+      },
+    }),
   },
 });
 

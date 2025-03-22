@@ -2,15 +2,15 @@ import React from 'react';
 import { View, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import Input, { InputProps } from '../base/Input';
 import Text from '../base/Text';
-import { useTheme } from '../providers/ThemeProvider';
+import { useTheme } from '../../providers/ThemeProvider';
 import { TranslationKey } from '../../hooks/useAppTranslation';
 
-export interface FormInputProps extends Omit<InputProps, 'label' | 'error'> {
+export interface FormInputProps extends Omit<InputProps, 'label' | 'error' | 'errorTranslationKey'> {
   name: string;
   label?: string;
   labelTranslationKey?: string;
   required?: boolean;
-  error?: string | null;
+  error?: string | { message?: string; key?: string } | null;
   touched?: boolean;
   showRequiredLabel?: boolean;
   containerStyle?: ViewStyle;
@@ -39,6 +39,19 @@ const FormInput: React.FC<FormInputProps> = ({
 
   // Only show error if the field has been touched
   const showError = error && (!showErrorOnlyWhenTouched || touched);
+
+  // Extract error message and translation key if error is an object
+  let errorMessage: string | undefined;
+  let errorTranslationKey: string | undefined;
+
+  if (showError) {
+    if (typeof error === 'string') {
+      errorMessage = error;
+    } else if (error && typeof error === 'object') {
+      errorMessage = error.message;
+      errorTranslationKey = error.key;
+    }
+  }
 
   // Support both direct label text and translation key
   const displayLabel = label || labelTranslationKey;
@@ -71,7 +84,13 @@ const FormInput: React.FC<FormInputProps> = ({
       )}
 
       {/* Input component with props forwarded */}
-      <Input fullWidth error={showError ? error : undefined} accessibilityLabel={label} {...rest} />
+      <Input
+        fullWidth
+        error={errorMessage}
+        errorTranslationKey={errorTranslationKey}
+        accessibilityLabel={label}
+        {...rest}
+      />
     </View>
   );
 };

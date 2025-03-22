@@ -194,7 +194,7 @@ export default function LanguageModal() {
       <PanGestureHandler onGestureEvent={gestureHandler}>
         <Animated.View style={[styles.contentContainer, modalStyle]}>
           <View style={styles.handle} />
-          <Text style={styles.title}>{t('language.select', 'Select language')}</Text>
+          <Text style={styles.title}>{t('settings.selectLanguage', 'Select language')}</Text>
 
           {languages.map((language, index) => (
             <React.Fragment key={language.code}>

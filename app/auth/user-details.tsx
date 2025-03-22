@@ -35,6 +35,7 @@ import i18next from '../../src/i18n';
 import { Ionicons } from '@expo/vector-icons';
 import { RootState } from '../../src/store';
 import useAppTranslation from '../../src/hooks/useAppTranslation';
+import { useLanguage } from '../../src/providers/LanguageProvider';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -51,6 +52,7 @@ const UserDetailsScreen = () => {
   const params = useLocalSearchParams();
   const { t } = useAppTranslation();
   const { startVoiceGuidance, stopVoiceGuidance, readText, isActive } = useVoiceGuidance();
+  const { currentLanguage } = useLanguage();
 
   // Get user details from Redux
   const storedUserDetails = useAppSelector((state: RootState) => state.auth.userDetails);
@@ -64,6 +66,9 @@ const UserDetailsScreen = () => {
   });
 
   const [errors, setErrors] = useState<Partial<UserDetailsFormData>>({});
+  const [errorKeys, setErrorKeys] = useState<Partial<Record<keyof UserDetailsFormData, string>>>(
+    {}
+  );
   const [isLoading, setIsLoading] = useState(false);
   const selectedLanguage = useAppSelector((state: RootState) => state.settings.language);
 
@@ -85,6 +90,20 @@ const UserDetailsScreen = () => {
       });
     }
   }, [storedUserDetails]);
+
+  // Re-translate errors when language changes
+  useEffect(() => {
+    if (Object.keys(errorKeys).length > 0) {
+      const newErrors: Partial<UserDetailsFormData> = {};
+
+      // Update each error with the translated message
+      Object.entries(errorKeys).forEach(([field, key]) => {
+        newErrors[field as keyof UserDetailsFormData] = t(key as any);
+      });
+
+      setErrors(newErrors);
+    }
+  }, [t, currentLanguage, i18next.language, errorKeys]);
 
   const buttonScale = useSharedValue(1);
 
@@ -140,32 +159,51 @@ const UserDetailsScreen = () => {
 
     // Clear error for this field when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+
+      // Also clear error key
+      setErrorKeys(prev => {
+        const newErrorKeys = { ...prev };
+        delete newErrorKeys[field];
+        return newErrorKeys;
+      });
     }
   };
 
   const validateForm = (): boolean => {
     const newErrors: Partial<UserDetailsFormData> = {};
+    const newErrorKeys: Partial<Record<keyof UserDetailsFormData, string>> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = t('validation.required', 'Name is required', {
+      const key = 'validation.required';
+      newErrorKeys.name = key;
+      newErrors.name = t(key, 'Name is required', {
         field: t('userDetails.name', 'Name'),
       });
     }
 
     if (!formData.state.trim()) {
-      newErrors.state = t('validation.required', 'State is required', {
+      const key = 'validation.required';
+      newErrorKeys.state = key;
+      newErrors.state = t(key, 'State is required', {
         field: t('userDetails.state', 'State'),
       });
     }
 
     if (!formData.town.trim()) {
-      newErrors.town = t('validation.required', 'Town is required', {
+      const key = 'validation.required';
+      newErrorKeys.town = key;
+      newErrors.town = t(key, 'Town is required', {
         field: t('userDetails.town', 'Town'),
       });
     }
 
     setErrors(newErrors);
+    setErrorKeys(newErrorKeys);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -253,21 +291,25 @@ const UserDetailsScreen = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.formContainer}>
-            <Input
-              value={formData.name}
-              onChangeText={text => handleChange('name', text)}
-              placeholder={t('userDetails.name', 'Name')}
-              error={errors.name}
-              voiceElementId="userDetails-name"
-              returnKeyType="next"
-            />
+            <View style={styles.inputWrapper}>
+              <Input
+                value={formData.name}
+                onChangeText={text => handleChange('name', text)}
+                placeholder={t('userDetails.name', 'Name')}
+                error={errorKeys.name ? undefined : errors.name}
+                errorTranslationKey={errorKeys.name}
+                voiceElementId="userDetails-name"
+                returnKeyType="next"
+              />
+            </View>
 
             <TouchableWithoutFeedback onPress={handleStatePress}>
-              <View style={{ width: '100%', alignItems: 'center' }}>
+              <View style={styles.inputWrapper}>
                 <Input
                   value={formData.state}
                   placeholder={t('userDetails.state', 'State')}
-                  error={errors.state}
+                  error={errorKeys.state ? undefined : errors.state}
+                  errorTranslationKey={errorKeys.state}
                   voiceElementId="userDetails-state"
                   editable={false}
                   pointerEvents="none"
@@ -278,24 +320,30 @@ const UserDetailsScreen = () => {
               </View>
             </TouchableWithoutFeedback>
 
-            <Input
-              value={formData.town}
-              onChangeText={text => handleChange('town', text)}
-              placeholder={t('userDetails.town', 'Town')}
-              error={errors.town}
-              voiceElementId="userDetails-town"
-              returnKeyType="next"
-            />
+            <View style={styles.inputWrapper}>
+              <Input
+                value={formData.town}
+                onChangeText={text => handleChange('town', text)}
+                placeholder={t('userDetails.town', 'Town')}
+                error={errorKeys.town ? undefined : errors.town}
+                errorTranslationKey={errorKeys.town}
+                voiceElementId="userDetails-town"
+                returnKeyType="next"
+              />
+            </View>
 
-            <Input
-              value={formData.family}
-              onChangeText={text => handleChange('family', text)}
-              placeholder={t('userDetails.family', 'Family (Optional)')}
-              error={errors.family}
-              voiceElementId="userDetails-family"
-              returnKeyType="done"
-              onSubmitEditing={handleContinue}
-            />
+            <View style={styles.inputWrapper}>
+              <Input
+                value={formData.family}
+                onChangeText={text => handleChange('family', text)}
+                placeholder={t('userDetails.family', 'Family (Optional)')}
+                error={errorKeys.family ? undefined : errors.family}
+                errorTranslationKey={errorKeys.family}
+                voiceElementId="userDetails-family"
+                returnKeyType="done"
+                onSubmitEditing={handleContinue}
+              />
+            </View>
           </View>
         </ScrollView>
 
@@ -333,7 +381,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     paddingHorizontal: scale(16),
     marginTop: verticalScale(24),
-    marginBottom: verticalScale(32),
+    marginBottom: Platform.OS === 'ios' ? verticalScale(24) : verticalScale(32),
     alignItems: 'center',
   },
   title: {
@@ -359,16 +407,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(16),
     paddingBottom: verticalScale(24),
     alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        paddingTop: verticalScale(8),
+      }
+    }),
   },
   formContainer: {
     width: '100%',
-    gap: verticalScale(16),
     alignItems: 'center',
     maxWidth: scale(375),
   },
+  inputWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: Platform.OS === 'ios' ? verticalScale(12) : verticalScale(16),
+    minHeight: Platform.OS === 'ios' ? verticalScale(70) : undefined,
+  },
   buttonContainer: {
     paddingHorizontal: scale(16),
-    paddingBottom: verticalScale(16),
+    paddingBottom: Platform.OS === 'ios' ? verticalScale(24) : verticalScale(16),
     marginTop: 'auto',
     width: '100%',
     alignItems: 'center',

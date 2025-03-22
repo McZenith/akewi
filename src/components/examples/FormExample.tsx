@@ -1,307 +1,278 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import FormInput from '../form/FormInput';
-import SelectInput from '../form/SelectInput';
-import SaveButton from '../form/SaveButton';
+import Button from '../base/Button';
 import Text from '../base/Text';
-import { useTheme } from '../providers/ThemeProvider';
-import * as validators from '../../utils/formValidation';
+import LanguageToggle from '../language/LanguageToggle';
+import { useTheme } from '../../providers/ThemeProvider';
+import { required, email, minLength } from '../../utils/formValidation';
+import { useLanguage } from '../../providers/LanguageProvider';
+import { Ionicons } from '@expo/vector-icons';
 
 /**
  * FormExample Component
- * Showcases the form components and validation
+ * Demonstrates form validation with proper error message translations
  */
 const FormExample: React.FC = () => {
   const { theme } = useTheme();
+  const { t, i18n } = useTranslation();
+  const { currentLanguage, changeLanguage } = useLanguage();
 
-  // Form state
-  const [formState, setFormState] = useState({
-    firstName: '',
-    lastName: '',
+  const [values, setValues] = useState({
+    name: '',
     email: '',
-    phone: '',
-    country: '',
-    bio: '',
+    password: '',
   });
 
-  // Touched state to track which fields have been interacted with
   const [touched, setTouched] = useState({
-    firstName: false,
-    lastName: false,
+    name: false,
     email: false,
-    phone: false,
-    country: false,
-    bio: false,
+    password: false,
   });
 
-  // Form errors
-  const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const [errors, setErrors] = useState<any>({});
+  const [submitted, setSubmitted] = useState(false);
 
-  // Loading state for save button
-  const [saving, setSaving] = useState(false);
-
-  // Country options for select input
-  const countries = [
-    { label: 'Nigeria', value: 'nigeria', translationKey: 'countries.nigeria' },
-    { label: 'Ghana', value: 'ghana', translationKey: 'countries.ghana' },
-    { label: 'Kenya', value: 'kenya', translationKey: 'countries.kenya' },
-    { label: 'South Africa', value: 'southAfrica', translationKey: 'countries.southAfrica' },
-    { label: 'Egypt', value: 'egypt', translationKey: 'countries.egypt' },
-    { label: 'Ethiopia', value: 'ethiopia', translationKey: 'countries.ethiopia' },
-    { label: 'Tanzania', value: 'tanzania', translationKey: 'countries.tanzania' },
-    { label: 'Uganda', value: 'uganda', translationKey: 'countries.uganda' },
-    { label: 'Algeria', value: 'algeria', translationKey: 'countries.algeria' },
-    { label: 'Morocco', value: 'morocco', translationKey: 'countries.morocco' },
-  ];
-
-  // Handle field change
-  const handleChange = (field: string) => (value: any) => {
-    // Update form state
-    setFormState(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Validate field
-    validateField(field, value);
-  };
-
-  // Mark field as touched on blur
-  const handleBlur = (field: string) => () => {
-    setTouched(prev => ({
-      ...prev,
-      [field]: true,
-    }));
-
-    // Validate field
-    validateField(field, formState[field as keyof typeof formState]);
-  };
-
-  // Validate a specific field
-  const validateField = (field: string, value: any) => {
-    let error = null;
+  // This function validates a single field and returns any errors
+  const validateField = (field: string, value: string) => {
+    let fieldError = null;
 
     switch (field) {
-      case 'firstName':
-        error = validators.compose(
-          validators.required('First name is required'),
-          validators.minLength(2, 'First name must be at least 2 characters')
-        )(value);
+      case 'name':
+        fieldError = required('errors.required', true)(value);
         break;
-
-      case 'lastName':
-        error = validators.compose(
-          validators.required('Last name is required'),
-          validators.minLength(2, 'Last name must be at least 2 characters')
-        )(value);
-        break;
-
       case 'email':
-        error = validators.compose(
-          validators.required('Email is required'),
-          validators.email()
-        )(value);
+        fieldError = email('errors.invalidEmail', true)(value);
         break;
-
-      case 'phone':
-        error = validators.phoneNumber()(value);
-        break;
-
-      case 'country':
-        error = validators.required('Country is required')(value);
-        break;
-
-      case 'bio':
-        error = validators.maxLength(200, 'Bio cannot exceed 200 characters')(value);
-        break;
-
-      default:
+      case 'password':
+        fieldError = minLength(6, 'errors.passwordShort', true)(value);
         break;
     }
 
-    // Update errors state
-    setErrors(prev => ({
-      ...prev,
-      [field]: error,
-    }));
-
-    return error;
+    return fieldError;
   };
 
-  // Validate all fields
-  const validateForm = () => {
-    const newErrors: Record<string, string | null> = {};
-    let isValid = true;
+  // Revalidate all fields when language changes
+  useEffect(() => {
+    // Don't do anything if no errors exist yet
+    if (Object.keys(errors).length === 0) return;
 
-    // Validate each field
-    Object.keys(formState).forEach(field => {
-      const error = validateField(field, formState[field as keyof typeof formState]);
-      newErrors[field] = error;
+    // Re-validate all fields to generate new error objects with correct translation keys
+    const newErrors: Record<string, any> = {};
 
-      if (error) {
-        isValid = false;
-      }
-    });
+    if (touched.name) {
+      const nameError = validateField('name', values.name);
+      if (nameError) newErrors.name = nameError;
+    }
 
-    // Mark all fields as touched
-    setTouched({
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      country: true,
-      bio: true,
-    });
+    if (touched.email) {
+      const emailError = validateField('email', values.email);
+      if (emailError) newErrors.email = emailError;
+    }
 
-    // Update errors state
+    if (touched.password) {
+      const passwordError = validateField('password', values.password);
+      if (passwordError) newErrors.password = passwordError;
+    }
+
+    // Update errors state with new error objects
     setErrors(newErrors);
+  }, [currentLanguage, i18n.language]); // Re-run when language changes
 
-    return isValid;
+  const handleChange = (field: string, value: string) => {
+    setValues({ ...values, [field]: value });
+
+    // Validate the field
+    const fieldError = validateField(field, value);
+
+    // Update errors
+    if (fieldError) {
+      setErrors({ ...errors, [field]: fieldError });
+    } else {
+      const newErrors = { ...errors };
+      delete newErrors[field];
+      setErrors(newErrors);
+    }
   };
 
-  // Handle form submission
+  const handleBlur = (field: string) => {
+    setTouched({ ...touched, [field]: true });
+  };
+
   const handleSubmit = () => {
+    // Mark all fields as touched
+    const allTouched = Object.keys(values).reduce(
+      (acc, key) => {
+        acc[key] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>
+    );
+
+    setTouched(allTouched);
+    setSubmitted(true);
+
     // Validate all fields
-    const isValid = validateForm();
-
-    if (isValid) {
-      // Show saving indicator
-      setSaving(true);
-
-      // Simulate API call
-      setTimeout(() => {
-        setSaving(false);
-        Alert.alert('Form Submitted', 'Your form was successfully submitted!', [{ text: 'OK' }]);
-      }, 1500);
+    const formErrors: Record<string, any> = {};
+    if (!values.name) formErrors.name = required('errors.required', true)(values.name);
+    if (!values.email || !email('', false)(values.email)) {
+      formErrors.email = email('errors.invalidEmail', true)(values.email);
     }
+    if (!values.password || values.password.length < 6) {
+      formErrors.password = minLength(6, 'errors.passwordShort', true)(values.password);
+    }
+
+    setErrors(formErrors);
+
+    // Check if form is valid
+    if (Object.keys(formErrors).length === 0) {
+      // Handle successful form submission
+      console.log('Form submitted:', values);
+    }
+  };
+
+  // Helper to quickly test language switching with errors
+  const showAllErrors = () => {
+    const formErrors: Record<string, any> = {
+      name: required('errors.required', true)(''),
+      email: email('errors.invalidEmail', true)('invalid-email'),
+      password: minLength(6, 'errors.passwordShort', true)('123'),
+    };
+
+    setTouched({
+      name: true,
+      email: true,
+      password: true,
+    });
+
+    setErrors(formErrors);
+  };
+
+  // Toggle language for testing
+  const toggleLanguage = () => {
+    changeLanguage(currentLanguage === 'English' ? 'Yoruba' : 'English');
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.keyboardAvoidingView}
-    >
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <Text variant="h1">Form Components</Text>
-          <Text variant="subtitle1">Form Components Showcase</Text>
-        </View>
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Form Example</Text>
+        <LanguageToggle
+          primaryLanguage="English"
+          secondaryLanguage="Yoruba"
+          onPress={toggleLanguage}
+        />
+      </View>
 
-        <View style={styles.form}>
-          {/* Basic Form Inputs */}
-          <Text variant="h3" style={styles.sectionTitle}>
-            User Information
-          </Text>
+      <Text style={styles.description}>
+        This form demonstrates validation with translated error messages. Try switching languages to
+        see error messages update in real-time.
+      </Text>
 
-          <FormInput
-            name="firstName"
-            label="First Name"
-            value={formState.firstName}
-            onChangeText={handleChange('firstName')}
-            onBlur={handleBlur('firstName')}
-            error={errors.firstName}
-            touched={touched.firstName}
-            required
-            placeholder="Enter your first name"
-          />
+      {/* Test controls */}
+      <View style={styles.testControls}>
+        <TouchableOpacity style={styles.testButton} onPress={showAllErrors}>
+          <Ionicons name="warning" size={16} color="#ffffff" />
+          <Text style={styles.testButtonText}>Show All Errors</Text>
+        </TouchableOpacity>
+      </View>
 
-          <FormInput
-            name="lastName"
-            label="Last Name"
-            value={formState.lastName}
-            onChangeText={handleChange('lastName')}
-            onBlur={handleBlur('lastName')}
-            error={errors.lastName}
-            touched={touched.lastName}
-            required
-            placeholder="Enter your last name"
-          />
+      <View style={styles.form}>
+        <FormInput
+          name="name"
+          label={t('profile.name')}
+          placeholder={t('Enter your name')}
+          value={values.name}
+          onChangeText={text => handleChange('name', text)}
+          onBlur={() => handleBlur('name')}
+          error={errors.name}
+          touched={touched.name}
+          required
+        />
 
-          <FormInput
-            name="email"
-            label="Email"
-            value={formState.email}
-            onChangeText={handleChange('email')}
-            onBlur={handleBlur('email')}
-            error={errors.email}
-            touched={touched.email}
-            required
-            placeholder="Enter your email address"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+        <FormInput
+          name="email"
+          label={t('profile.email')}
+          placeholder={t('Enter your email')}
+          value={values.email}
+          onChangeText={text => handleChange('email', text)}
+          onBlur={() => handleBlur('email')}
+          error={errors.email}
+          touched={touched.email}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          required
+        />
 
-          <FormInput
-            name="phone"
-            label="Phone Number"
-            value={formState.phone}
-            onChangeText={handleChange('phone')}
-            onBlur={handleBlur('phone')}
-            error={errors.phone}
-            touched={touched.phone}
-            placeholder="Enter your phone number"
-            keyboardType="phone-pad"
-            startAdornment={<Feather name="phone" size={20} color={theme.colors.textSecondary} />}
-          />
+        <FormInput
+          name="password"
+          label={t('auth.password')}
+          placeholder={t('Enter your password')}
+          value={values.password}
+          onChangeText={text => handleChange('password', text)}
+          onBlur={() => handleBlur('password')}
+          error={errors.password}
+          touched={touched.password}
+          secureTextEntry
+          required
+        />
 
-          {/* Select Input */}
-          <SelectInput
-            label="Country"
-            value={formState.country}
-            options={countries}
-            onChange={handleChange('country')}
-            error={touched.country ? errors.country : null}
-            required
-            searchable
-            searchPlaceholder="Search countries..."
-          />
+        <Button title={t('common.submit')} onPress={handleSubmit} style={styles.button} />
 
-          <FormInput
-            name="bio"
-            label="Bio"
-            value={formState.bio}
-            onChangeText={handleChange('bio')}
-            onBlur={handleBlur('bio')}
-            error={errors.bio}
-            touched={touched.bio}
-            placeholder="Tell us about yourself"
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-            style={{ height: 100 }}
-            helperText={`${formState.bio.length}/200 characters`}
-          />
-
-          {/* Submit Button */}
-          <View style={styles.buttonContainer}>
-            <SaveButton title="Submit Form" saving={saving} onPress={handleSubmit} fullWidth />
-          </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        {submitted && Object.keys(errors).length === 0 && (
+          <Text style={styles.success}>Form submitted successfully!</Text>
+        )}
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  keyboardAvoidingView: {
-    flex: 1,
-  },
   container: {
     flex: 1,
     padding: 16,
   },
   header: {
-    marginBottom: 24,
-  },
-  form: {
-    marginBottom: 40,
-  },
-  sectionTitle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
   },
-  buttonContainer: {
-    marginTop: 24,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  description: {
+    marginBottom: 16,
+  },
+  testControls: {
+    flexDirection: 'row',
+    marginBottom: 24,
+  },
+  testButton: {
+    backgroundColor: '#007bff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  testButtonText: {
+    color: '#ffffff',
+    marginLeft: 8,
+  },
+  form: {
+    width: '100%',
+  },
+  button: {
+    marginTop: 16,
+  },
+  success: {
+    color: 'green',
+    marginTop: 16,
+    textAlign: 'center',
   },
 });
 
